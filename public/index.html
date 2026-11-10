@@ -82,14 +82,13 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 </div></div></section>
 
 <section class="section" id="services"><div class="container">
-  <div class="section-head"><div><span class="eyebrow">The Catalog</span><h2>Services & Pricing</h2></div><p class="lead">Select a service to review starting pricing and open the appointment planner.</p></div>
+  <div class="section-head"><div><span class="eyebrow">The Catalog</span><h2>Our Services</h2></div><p class="lead">Choose from our five salon services. Every appointment is scheduled for four hours.</p></div>
   <div class="grid services-grid">
-    <article class="card"><div class="service-icon">✦</div><h3>Luxury Hair Styling</h3><p class="muted">Silk presses, blowouts, signature styling, and polished finishing tailored to your look.</p><div class="price">Starting at $75</div><button class="btn secondary small service-btn" data-service="Luxury Hair Styling" data-price="$75+">View & Book</button></article>
-    <article class="card"><div class="service-icon">◇</div><h3>First Class Extensions</h3><p class="muted">Premium installation and styling designed for seamless length, volume, movement, and wear.</p><div class="price">Starting at $150</div><button class="btn secondary small service-btn" data-service="First Class Extensions" data-price="$150+">View & Book</button></article>
-    <article class="card"><div class="service-icon">◎</div><h3>Loc Care & Styling</h3><p class="muted">Retwists, loc maintenance, styling, and intentional care routines for a clean finished look.</p><div class="price">Starting at $70</div><button class="btn secondary small service-btn" data-service="Loc Care & Styling" data-price="$70+">View & Book</button></article>
-    <article class="card"><div class="service-icon">⌁</div><h3>Hair Spa Treatments</h3><p class="muted">Deep conditioning, steaming, scalp care, and restorative treatments for healthier-looking hair.</p><div class="price">Starting at $60</div><button class="btn secondary small service-btn" data-service="Hair Spa Treatments" data-price="$60+">View & Book</button></article>
-    <article class="card"><div class="service-icon">✧</div><h3>Color Services</h3><p class="muted">Personalized color consultation and professional application based on your desired result.</p><div class="price">Consultation required</div><button class="btn secondary small service-btn" data-service="Color Services" data-price="Consultation">View & Book</button></article>
-    <article class="card"><div class="service-icon">♡</div><h3>Custom Experience</h3><p class="muted">Not sure what you need? Start with a consultation so your service can be tailored to you.</p><div class="price">By consultation</div><button class="btn secondary small service-btn" data-service="Consultation" data-price="Consultation">Start Consultation</button></article>
+    <article class="card"><div class="service-icon">✦</div><h3>Closure Sew-In</h3><p class="muted">A polished sew-in style with a closure finish.</p><div class="price">4-hour appointment</div><button class="btn secondary small service-btn" data-service="Closure Sew-In" data-price="Contact salon for pricing">View & Book</button></article>
+    <article class="card"><div class="service-icon">◇</div><h3>Quick Weave</h3><p class="muted">A versatile quick-weave style tailored to your desired look.</p><div class="price">4-hour appointment</div><button class="btn secondary small service-btn" data-service="Quick Weave" data-price="Contact salon for pricing">View & Book</button></article>
+    <article class="card"><div class="service-icon">◎</div><h3>Signature Sew-In with Leave Out</h3><p class="muted">A signature sew-in with leave-out for a natural blend and finished style.</p><div class="price">4-hour appointment</div><button class="btn secondary small service-btn" data-service="Signature Sew-In with Leave Out" data-price="Contact salon for pricing">View & Book</button></article>
+    <article class="card"><div class="service-icon">⌁</div><h3>Signature Shampoo & Blow Dry</h3><p class="muted">A signature shampoo service finished with a professional blow dry.</p><div class="price">4-hour appointment</div><button class="btn secondary small service-btn" data-service="Signature Shampoo & Blow Dry" data-price="Contact salon for pricing">View & Book</button></article>
+    <article class="card"><div class="service-icon">✧</div><h3>Signature Silk Press</h3><p class="muted">A smooth, sleek silk press with a polished finish.</p><div class="price">4-hour appointment</div><button class="btn secondary small service-btn" data-service="Signature Silk Press" data-price="Contact salon for pricing">View & Book</button></article>
   </div>
 </div></section>
 
@@ -140,24 +139,24 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
       <form id="bookingForm">
         <div class="form-grid"><div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" required></div><div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div></div>
         <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email"></div>
-        <div class="field"><label for="service">Service</label><select id="service" name="service" required><option value="">Choose a service</option><option>Luxury Hair Styling</option><option>First Class Extensions</option><option>Loc Care & Styling</option><option>Hair Spa Treatments</option><option>Color Services</option><option>Consultation</option></select></div>
-        <div class="form-grid"><div class="field"><label for="time">Preferred time</label><select id="time" name="time" required><option value="">Choose a time</option><option>9:00 AM</option><option>10:30 AM</option><option>12:00 PM</option><option>1:30 PM</option><option>3:00 PM</option><option>4:30 PM</option><option>6:00 PM</option></select></div><div class="field"><label for="guests">Guests</label><select id="guests" name="guests"><option>1</option><option>2</option></select></div></div>
+        <div class="field"><label for="service">Service</label><select id="service" name="service" required><option value="">Choose a service</option><option>Closure Sew-In</option><option>Quick Weave</option><option>Signature Sew-In with Leave Out</option><option>Signature Shampoo & Blow Dry</option><option>Signature Silk Press</option></select></div>
+        <div class="form-grid"><div class="field"><label for="time">Available start time</label><select id="time" name="time" required disabled><option value="">Choose a date first</option><option value="09:00">9:00 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="12:00">12:00 PM</option></select></div></div>
         <div class="field"><label for="notes">Notes / hair goals</label><textarea id="notes" name="notes" placeholder="Tell us anything helpful before your appointment."></textarea></div>
         <div class="booking-actions"><button class="btn" type="submit">Submit Booking Request →</button><button class="btn secondary" type="button" id="whatsappBtn">Ask via WhatsApp</button></div>
-        <p class="notice">Business WhatsApp: +1 (240) 370-1128. A live booking-platform link can be added later without changing the design.</p>
+        <p class="notice">A $25 non-refundable deposit is required. Your request is saved as pending until the salon verifies the deposit. Remaining balance is paid in cash at the salon. All appointments are four hours.</p>
       </form>
     </div>
   </div>
 </div></section>
 
 <section class="section" id="contact"><div class="container">
-  <div class="section-head"><div><span class="eyebrow">Contact</span><h2>Find First Class Styles</h2></div><p class="lead">Suitland, Maryland · Add the official street address and hours when ready.</p></div>
+  <div class="section-head"><div><span class="eyebrow">Contact</span><h2>Find First Class Styles</h2></div><p class="lead">3813 Old Silver Hill Rd, Suitland, MD 20746 · Saturday–Tuesday, 9 AM–4 PM.</p></div>
   <div class="contact-grid">
     <div class="contact-list">
-      <div class="contact-item"><strong>Location</strong><span class="muted">Suitland, Maryland</span></div>
+      <div class="contact-item"><strong>Location</strong><span class="muted">3813 Old Silver Hill Rd, Suitland, MD 20746</span></div>
       <div class="contact-item"><strong>Phone / WhatsApp</strong><span class="muted">+1 (240) 370-1128</span></div>
-      <div class="contact-item"><strong>Hours</strong><span class="muted">By appointment · Add official hours</span></div>
-      <div class="contact-item"><strong>Email</strong><span class="muted">Add official salon email</span></div>
+      <div class="contact-item"><strong>Hours</strong><span class="muted">Saturday–Tuesday: 9 AM–4 PM · Wednesday–Friday: Closed</span></div>
+      <div class="contact-item"><strong>Email</strong><span class="muted">firstclass.styles1@gmail.com</span></div>
       <div class="booking-actions"><a class="btn" href="tel:+12403701128">Call Now</a><a class="btn secondary" href="https://wa.me/12403701128" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>
     </div>
     <div class="map"><div><span class="eyebrow">Map</span><h3>Suitland, Maryland</h3><p class="muted">The exact street address has intentionally not been invented. Add your official address before embedding a precise map.</p><a class="btn secondary small" href="https://www.google.com/maps/search/?api=1&query=First+Class+Styles+Suitland+MD" target="_blank" rel="noopener noreferrer">Search Google Maps</a></div></div>
