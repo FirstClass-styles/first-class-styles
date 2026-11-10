@@ -78,7 +78,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
   <h1>Elevate Your <span class="gold">Hair Experience.</span></h1>
   <p class="lead">Luxury hair care, premium extensions, professional loc care, and personalized salon treatments tailored just for you.</p>
   <div class="hero-actions"><a class="btn" href="#booking">Reserve an Appointment →</a><a class="btn secondary" href="#services">Explore Services</a></div>
-  <p class="hero-note">Appointments are planned around your selected service, date, and preferred time.</p>
+  <p class="hero-note">Open Saturday–Tuesday, 9 AM–4 PM · Four-hour appointments · $25 non-refundable deposit.</p>
 </div></div></section>
 
 <section class="section" id="services"><div class="container">
@@ -143,7 +143,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
         <div class="field"><label for="service">Service</label><select id="service" name="service" required><option value="">Choose a service</option><option>Luxury Hair Styling</option><option>First Class Extensions</option><option>Loc Care & Styling</option><option>Hair Spa Treatments</option><option>Color Services</option><option>Consultation</option></select></div>
         <div class="form-grid"><div class="field"><label for="time">Preferred time</label><select id="time" name="time" required><option value="">Choose a time</option><option>9:00 AM</option><option>10:30 AM</option><option>12:00 PM</option><option>1:30 PM</option><option>3:00 PM</option><option>4:30 PM</option><option>6:00 PM</option></select></div><div class="field"><label for="guests">Guests</label><select id="guests" name="guests"><option>1</option><option>2</option></select></div></div>
         <div class="field"><label for="notes">Notes / hair goals</label><textarea id="notes" name="notes" placeholder="Tell us anything helpful before your appointment."></textarea></div>
-        <div class="booking-actions"><button class="btn" type="submit">Prepare Booking Request →</button><button class="btn secondary" type="button" id="whatsappBtn">Send via WhatsApp</button></div>
+        <div class="booking-actions"><button class="btn" type="submit">Submit Booking Request →</button><button class="btn secondary" type="button" id="whatsappBtn">Ask via WhatsApp</button></div>
         <p class="notice">Business WhatsApp: +1 (240) 370-1128. A live booking-platform link can be added later without changing the design.</p>
       </form>
     </div>
@@ -181,12 +181,11 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 <script>
 const BUSINESS_WHATSAPP="12403701128";
 const bookingDescriptions={
-"Luxury Hair Styling":"Silk presses, blowouts, signature styling, and polished finishing tailored to your look.",
-"First Class Extensions":"Premium installation and styling designed for seamless length, volume, movement, and wear.",
-"Loc Care & Styling":"Retwists, loc maintenance, styling, and intentional care routines for a clean finished look.",
-"Hair Spa Treatments":"Deep conditioning, steaming, scalp care, and restorative treatments for healthier-looking hair.",
-"Color Services":"Personalized color consultation and professional application based on your desired result.",
-"Consultation":"A personalized consultation to plan the right service for your hair goals."
+"Closure Sew-In":"A polished sew-in style with a closure finish.",
+"Quick Weave":"A versatile quick-weave style tailored to your desired look.",
+"Signature Sew-In with Leave Out":"A signature sew-in with leave-out for a natural blend and finished style.",
+"Signature Shampoo & Blow Dry":"A signature shampoo service finished with a professional blow dry.",
+"Signature Silk Press":"A smooth, sleek silk press with a polished finish."
 };
 
 const menuBtn=document.getElementById("menuBtn"),nav=document.getElementById("mainNav"),header=document.querySelector(".site-header");
@@ -213,43 +212,91 @@ document.querySelectorAll(".service-btn").forEach(btn=>btn.addEventListener("cli
 document.querySelectorAll("[data-lightbox]").forEach(fig=>fig.addEventListener("click",()=>{document.getElementById("lightboxImg").src=fig.dataset.lightbox;openOverlay("lightboxOverlay")}));
 
 let viewDate=new Date();let selectedDate=null;
+let liveAppointments=[];
 const monthTitle=document.getElementById("monthTitle"),daysEl=document.getElementById("calendarDays"),selectedEl=document.getElementById("selectedDate");
+const timeSelect=document.getElementById("time");
+const timeOptions=[["09:00","9:00 AM"],["10:00","10:00 AM"],["11:00","11:00 AM"],["12:00","12:00 PM"]];
+function nyParts(date){
+ const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date);
+ return Object.fromEntries(parts.map(p=>[p.type,p.value]));
+}
+function localDateTimeToUtc(dateText,timeText){
+ const [y,m,d]=dateText.split("-").map(Number),[h,min]=timeText.split(":").map(Number);
+ const target=Date.UTC(y,m-1,d,h,min,0);let guess=target;
+ for(let i=0;i<3;i++){const p=nyParts(new Date(guess));const represented=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second);guess+=target-represented;}
+ return new Date(guess);
+}
+function dateKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function sameDay(a,b){return a&&b&&a.toDateString()===b.toDateString()}
+function isSalonDay(d){return [0,1,2,6].includes(d.getDay())}
+function isAtLeast24Hours(dateText,timeText){return localDateTimeToUtc(dateText,timeText).getTime()>=Date.now()+24*60*60*1000}
+function appointmentDateKey(iso){const p=nyParts(new Date(iso));return p.year+"-"+p.month+"-"+p.day}
+function slotTaken(dateText,timeText){
+ const start=localDateTimeToUtc(dateText,timeText).getTime(),end=start+4*60*60*1000;
+ return liveAppointments.some(ap=>start<new Date(ap.ends_at).getTime()&&end>new Date(ap.starts_at).getTime());
+}
+function refreshTimes(){
+ const keep=timeSelect.value;timeSelect.innerHTML='<option value="">Choose an available time</option>';
+ if(!selectedDate){timeSelect.disabled=true;return;}
+ timeSelect.disabled=false;
+ const key=dateKey(selectedDate);
+ timeOptions.forEach(([value,label])=>{
+  const option=document.createElement("option");option.value=value;option.textContent=label;
+  if(!isSalonDay(selectedDate)||!isAtLeast24Hours(key,value)||slotTaken(key,value)){option.disabled=true;option.textContent=label+" — unavailable";}
+  timeSelect.appendChild(option);
+ });
+ if(keep&&Array.from(timeSelect.options).some(o=>o.value===keep&&!o.disabled))timeSelect.value=keep;
+}
+async function loadAvailability(){
+ try{const response=await fetch("/api/bookings",{cache:"no-store"});if(!response.ok)throw new Error("Availability unavailable");const data=await response.json();liveAppointments=data.appointments||[];}
+ catch(error){liveAppointments=[];toast("Live availability could not load. Please refresh before booking.");}
+ refreshTimes();renderCalendar();
+}
 function renderCalendar(){
  const y=viewDate.getFullYear(),m=viewDate.getMonth();monthTitle.textContent=new Intl.DateTimeFormat("en-US",{month:"long",year:"numeric"}).format(viewDate);daysEl.innerHTML="";
- const first=new Date(y,m,1),last=new Date(y,m+1,0),prevLast=new Date(y,m,0).getDate(),start=first.getDay(),today=new Date();today.setHours(0,0,0,0);
+ const first=new Date(y,m,1),last=new Date(y,m+1,0),start=first.getDay(),today=new Date();today.setHours(0,0,0,0);
  for(let i=0;i<42;i++){
-   const n=i-start+1,d=new Date(y,m,n),cell=document.createElement("button");cell.className="day";cell.type="button";cell.textContent=d.getDate();
-   if(n<1||n>last.getDate()){cell.classList.add("muted");cell.disabled=true}
-   else if(d<today){cell.classList.add("disabled");cell.disabled=true}
-   else{if(sameDay(d,selectedDate))cell.classList.add("selected");cell.addEventListener("click",()=>{selectedDate=d;selectedEl.textContent="Selected: "+d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});renderCalendar()})}
-   daysEl.appendChild(cell);
+  const n=i-start+1,d=new Date(y,m,n),cell=document.createElement("button");cell.className="day";cell.type="button";cell.textContent=d.getDate();
+  if(n<1||n>last.getDate()){cell.classList.add("muted");cell.disabled=true;}
+  else if(d<today||!isSalonDay(d)){cell.classList.add("disabled");cell.disabled=true;cell.title="Salon closed or date has passed";}
+  else{
+   if(sameDay(d,selectedDate))cell.classList.add("selected");
+   cell.addEventListener("click",()=>{selectedDate=d;selectedEl.textContent="Selected: "+d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});refreshTimes();renderCalendar();});
+  }
+  daysEl.appendChild(cell);
  }
 }
 document.getElementById("prevMonth").onclick=()=>{viewDate.setMonth(viewDate.getMonth()-1);renderCalendar()};
 document.getElementById("nextMonth").onclick=()=>{viewDate.setMonth(viewDate.getMonth()+1);renderCalendar()};
-document.getElementById("todayBtn").onclick=()=>{viewDate=new Date();renderCalendar()};renderCalendar();
+document.getElementById("todayBtn").onclick=()=>{viewDate=new Date();renderCalendar()};
+renderCalendar();refreshTimes();loadAvailability();
 
 function getBookingData(){
- return {
- name:document.getElementById("name").value.trim(),phone:document.getElementById("phone").value.trim(),
+ return {name:document.getElementById("name").value.trim(),phone:document.getElementById("phone").value.trim(),
  email:document.getElementById("email").value.trim(),service:document.getElementById("service").value,
- time:document.getElementById("time").value,guests:document.getElementById("guests").value,notes:document.getElementById("notes").value.trim(),
- date:selectedDate?selectedDate.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}):"Not selected"
- };
+ time:timeSelect.value,notes:document.getElementById("notes").value.trim(),date:selectedDate?dateKey(selectedDate):""};
 }
-function bookingText(d){return `Hello First Class Styles! I would like to request an appointment.%0A%0AName: ${encodeURIComponent(d.name)}%0APhone: ${encodeURIComponent(d.phone)}%0AEmail: ${encodeURIComponent(d.email||"Not provided")}%0AService: ${encodeURIComponent(d.service)}%0ADate: ${encodeURIComponent(d.date)}%0APreferred time: ${encodeURIComponent(d.time)}%0AGuests: ${encodeURIComponent(d.guests)}%0ANotes: ${encodeURIComponent(d.notes||"None")}`}
-
-document.getElementById("bookingForm").addEventListener("submit",e=>{
- e.preventDefault();const d=getBookingData();
- if(!selectedDate){toast("Please select an appointment date.");return}
- if(!d.name||!d.phone||!d.service||!d.time){toast("Please complete the required booking fields.");return}
- toast("Booking request prepared. Use WhatsApp to send it.");
+function bookingText(d){return "Hello First Class Styles! I would like to ask about an appointment.%0A%0AName: "+encodeURIComponent(d.name)+"%0APhone: "+encodeURIComponent(d.phone)+"%0AService: "+encodeURIComponent(d.service)+"%0ADate: "+encodeURIComponent(d.date)+"%0ATime: "+encodeURIComponent(d.time)+"%0ANote: "+encodeURIComponent(d.notes||"None");}
+document.getElementById("bookingForm").addEventListener("submit",async e=>{
+ e.preventDefault();const form=e.currentTarget;if(!form.reportValidity())return;
+ const d=getBookingData();if(!selectedDate){toast("Please select an appointment date.");return;}
+ if(!d.time){toast("Please choose an available start time.");return;}
+ if(!isAtLeast24Hours(d.date,d.time)){toast("Appointments must be booked at least 24 hours ahead.");refreshTimes();return;}
+ const submit=form.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent="Saving request…";
+ try{
+  const response=await fetch("/api/bookings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
+  const result=await response.json();
+  if(!response.ok)throw new Error(result.error||"Unable to save booking.");
+  toast("Request saved. Your $25 deposit is pending salon verification.");
+  form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
+  await loadAvailability();
+ }catch(error){toast(error.message||"Booking could not be saved. Please try again.");await loadAvailability();}
+ finally{submit.disabled=false;submit.textContent="Submit Booking Request →";}
 });
 document.getElementById("whatsappBtn").addEventListener("click",()=>{
  const form=document.getElementById("bookingForm");if(!form.reportValidity())return;
- const d=getBookingData();if(!selectedDate){toast("Please select an appointment date.");return}
- window.open(`https://wa.me/${BUSINESS_WHATSAPP}?text=${bookingText(d)}`,"_blank","noopener,noreferrer");
+ const d=getBookingData();if(!selectedDate||!d.time){toast("Choose a date and available time first.");return;}
+ window.open("https://wa.me/"+BUSINESS_WHATSAPP+"?text="+bookingText(d),"_blank","noopener,noreferrer");
 });
 document.getElementById("year").textContent=new Date().getFullYear();
 </script>
