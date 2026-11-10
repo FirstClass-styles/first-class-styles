@@ -289,7 +289,14 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   toast("Request saved. Your $25 deposit is pending salon verification.");
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
   await loadAvailability();
- }catch(error){toast(error.message||"Booking could not be saved. Please try again.");await loadAvailability();}
+ }catch(error){
+  const message=error.message||"Booking could not be saved. Please try again.";
+  if(/already booked|just booked|unavailable|overlap|double.book/i.test(message)){
+   toast("This time slot has already been reserved by another client. Please select another available time to continue with your booking.");
+   timeSelect.value="";
+  }else{toast(message);}
+  await loadAvailability();
+ }
  finally{submit.disabled=false;submit.textContent="Submit Booking Request →";}
 });
 document.getElementById("whatsappBtn").addEventListener("click",()=>{
