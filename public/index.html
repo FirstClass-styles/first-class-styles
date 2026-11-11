@@ -60,6 +60,32 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 :root{--nav-h:68px}.section{padding:76px 0}.container{width:min(100% - 24px,1160px)}.menu-btn{display:block}.nav{position:absolute;left:12px;right:12px;top:calc(100% + 8px);display:none;flex-direction:column;align-items:stretch;gap:5px;padding:12px;background:#11100ef2;border:1px solid var(--line);border-radius:18px;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:var(--shadow)}.nav.open{display:flex}.nav a:not(.btn){padding:12px 10px}.socials{padding:7px 5px}.nav .btn{width:100%}.hero{padding-top:calc(var(--nav-h) + 35px);background-position:58% center}.hero-actions .btn{width:100%}.section-head{display:block}.services-grid,.team-grid,.testimonials,.footer-grid{grid-template-columns:1fr}.gallery{grid-template-columns:1fr 1fr}.gallery figure:nth-child(n){grid-column:span 1;grid-row:span 1}.gallery figure:first-child{grid-column:span 2}.gallery img{min-height:180px}.form-grid{grid-template-columns:1fr}.calendar-card,.booking-form-card{padding:20px}.day{font-size:.78rem}.copyright{display:block}.copyright span{display:block;margin-top:6px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
 .availability-message{margin:9px 0 0;padding:12px 14px;border:1px solid rgba(215,181,109,.45);border-radius:10px;background:rgba(215,181,109,.09);color:#f5dc9d;font-size:.92rem;line-height:1.5}.availability-message[hidden]{display:none}
+
+/* Salon FAQ and quick-help assistant */
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.faq-item{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:0 18px}
+.faq-item summary{cursor:pointer;list-style:none;padding:18px 28px 18px 0;font-weight:800;color:var(--gold2);position:relative}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:after{content:"+";position:absolute;right:0;top:15px;font-size:1.35rem}
+.faq-item[open] summary:after{content:"−"}
+.faq-item p{margin:0 0 18px;color:var(--muted)}
+.help-launch{position:fixed;right:20px;bottom:20px;z-index:1500;border:1px solid var(--gold);border-radius:999px;background:var(--gold);color:#17110a;padding:13px 18px;font-weight:900;box-shadow:var(--shadow);cursor:pointer}
+.help-panel{position:fixed;right:20px;bottom:82px;z-index:1501;width:min(370px,calc(100vw - 28px));max-height:min(560px,calc(100dvh - 110px));display:none;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:20px;background:#17130f;box-shadow:var(--shadow)}
+.help-panel.open{display:flex}
+.help-head{display:flex;justify-content:space-between;align-items:center;padding:15px 17px;background:#211c15;border-bottom:1px solid var(--line)}
+.help-head strong{color:var(--gold2)}
+.help-close{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:9px;width:34px;height:34px;cursor:pointer}
+.help-log{padding:16px;overflow:auto;display:grid;gap:12px;min-height:180px}
+.help-message{padding:11px 13px;border-radius:14px;background:#211c15;color:var(--text);font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.help-message.user{background:#d7b56d;color:#17110a;margin-left:24px}
+.help-quick{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 12px}
+.help-quick button{border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--gold2);padding:7px 10px;font-size:.78rem;cursor:pointer}
+.help-form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.help-form input{min-width:0;flex:1}
+.help-form button{border:0;border-radius:11px;background:var(--gold);color:#17110a;padding:0 14px;font-weight:900;cursor:pointer}
+.help-disclaimer{padding:0 14px 12px;color:var(--muted);font-size:.72rem}
+@media(max-width:760px){.faq-grid{grid-template-columns:1fr}.help-launch{right:14px;bottom:14px}.help-panel{right:14px;bottom:76px}}
+
 </style>
 </head>
 
@@ -145,6 +171,20 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
   </div>
 </div></section>
 
+<section class="section" id="faq"><div class="container">
+  <div class="section-head"><div><span class="eyebrow">Helpful Information</span><h2>Frequently Asked Questions</h2></div><p class="lead">Quick answers about appointments, deposits, services, and visiting the salon.</p></div>
+  <div class="faq-grid">
+    <details class="faq-item"><summary>What days is the salon open?</summary><p>First Class Styles is open Saturday through Tuesday, 9 AM–4 PM. The salon is closed Wednesday through Friday.</p></details>
+    <details class="faq-item"><summary>How far ahead should I book?</summary><p>Please submit your appointment request at least 24 hours before your preferred start time. Available dates and times are shown in the booking calendar.</p></details>
+    <details class="faq-item"><summary>How long is an appointment?</summary><p>Each appointment is scheduled for four hours. Available start times are shown in the booking planner.</p></details>
+    <details class="faq-item"><summary>Is a deposit required?</summary><p>Yes. A $25 non-refundable deposit is required. Your request remains pending until the salon verifies the deposit and confirms your appointment.</p></details>
+    <details class="faq-item"><summary>How do I pay the deposit?</summary><p>Please contact the salon through WhatsApp for the current deposit instructions before sending payment. The remaining balance is paid in cash at the salon.</p></details>
+    <details class="faq-item"><summary>What services are available?</summary><p>Closure Sew-In, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact the salon for service pricing.</p></details>
+    <details class="faq-item"><summary>Where is First Class Styles?</summary><p>3813 Old Silver Hill Rd, Suitland, MD 20746.</p></details>
+    <details class="faq-item"><summary>How do I contact the salon?</summary><p>Call or WhatsApp +1 (240) 370-1128, or email firstclass.styles1@gmail.com.</p></details>
+  </div>
+</div></section>
+
 <section class="section" id="contact"><div class="container">
   <div class="section-head"><div><span class="eyebrow">Contact</span><h2>Find First Class Styles</h2></div><p class="lead">3813 Old Silver Hill Rd, Suitland, MD 20746 · Saturday–Tuesday, 9 AM–4 PM.</p></div>
   <div class="contact-grid">
@@ -171,6 +211,14 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 
 <div class="overlay" id="serviceOverlay" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle"><button class="icon-btn close" data-close="serviceOverlay" aria-label="Close">×</button><span class="eyebrow">Service Details</span><h3 id="serviceModalTitle">Service</h3><p id="serviceModalText" class="muted"></p><div class="price" id="serviceModalPrice"></div><p class="muted">Consultation and custom finishing are planned around your selected service. Add-ons or specialty requests may be quoted separately.</p><a class="btn" href="#booking" id="modalBookBtn">Choose This Service →</a></div></div>
 <div class="overlay" id="lightboxOverlay" aria-hidden="true"><div class="modal" style="width:min(900px,100%);padding:12px"><button class="icon-btn close" data-close="lightboxOverlay" aria-label="Close">×</button><img id="lightboxImg" src="" alt="Expanded portfolio image" style="width:100%;border-radius:16px;max-height:82vh;object-fit:contain;background:#090807"></div></div>
+<button class="help-launch" id="helpLaunch" type="button" aria-expanded="false" aria-controls="helpPanel">Salon Help</button>
+<div class="help-panel" id="helpPanel" role="dialog" aria-label="First Class Styles quick help" aria-hidden="true">
+  <div class="help-head"><strong>First Class Styles · Quick Help</strong><button class="help-close" id="helpClose" type="button" aria-label="Close help">×</button></div>
+  <div class="help-log" id="helpLog" aria-live="polite"><div class="help-message">Hello! I can answer common questions about salon hours, services, booking, deposits, and contact details. What would you like to know?</div></div>
+  <div class="help-quick"><button type="button" data-help="What are your hours?">Hours</button><button type="button" data-help="How do I book?">Booking</button><button type="button" data-help="How does the deposit work?">Deposit</button><button type="button" data-help="What services do you offer?">Services</button></div>
+  <form class="help-form" id="helpForm"><input id="helpInput" aria-label="Ask a salon question" placeholder="Type your question…" maxlength="300" required><button type="submit">Send</button></form>
+  <div class="help-disclaimer">Automated answers are based on the information published on this website. For anything not covered, contact the salon directly.</div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -315,6 +363,37 @@ document.getElementById("whatsappBtn").addEventListener("click",()=>{
  window.open("https://wa.me/"+BUSINESS_WHATSAPP+"?text="+bookingText(d),"_blank","noopener,noreferrer");
 });
 document.getElementById("year").textContent=new Date().getFullYear();
+
+/* Local FAQ helper: no external AI service, API key, or paid usage */
+(()=>{
+ const launch=document.getElementById("helpLaunch"),panel=document.getElementById("helpPanel"),close=document.getElementById("helpClose");
+ const log=document.getElementById("helpLog"),form=document.getElementById("helpForm"),input=document.getElementById("helpInput");
+ if(!launch||!panel||!close||!log||!form||!input)return;
+ const answers=[
+  {keys:["hour","open","close","day"],text:"We are open Saturday through Tuesday, 9 AM–4 PM. We are closed Wednesday through Friday."},
+  {keys:["book","appointment","reserve","schedule","calendar"],text:"Use the booking planner on this website. Choose an available Saturday, Sunday, Monday, or Tuesday and a start time. Requests must be made at least 24 hours ahead. Your request is pending until the $25 deposit is verified by the salon."},
+  {keys:["deposit","pay","payment","zelle","cash app","apple pay","cash"],text:"A $25 non-refundable deposit is required. Please WhatsApp the salon at +1 (240) 370-1128 for current deposit instructions before sending payment. The remaining balance is paid in cash at the salon."},
+  {keys:["service","style","weave","sew","silk","shampoo","blow"],text:"Our services are Closure Sew-In, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact us for current pricing."},
+  {keys:["address","location","where","map","directions"],text:"Find us at 3813 Old Silver Hill Rd, Suitland, MD 20746. Use the map in the Contact section for directions."},
+  {keys:["phone","call","whatsapp","email","contact"],text:"Call or WhatsApp +1 (240) 370-1128, or email firstclass.styles1@gmail.com."},
+  {keys:["how long","duration","hours long","four hour","4 hour"],text:"Each appointment is scheduled for four hours. Available start times are listed in the booking planner."},
+  {keys:["cancel","cancellation","refund","reschedule"],text:"This website does not publish a cancellation or refund policy beyond the $25 deposit being non-refundable. Please contact the salon directly for help with a change or cancellation."}
+ ];
+ function respond(q){
+  const text=q.toLowerCase();
+  for(const item of answers)if(item.keys.some(k=>text.includes(k)))return item.text;
+  return "I don't have that information in the published salon details. Please contact First Class Styles on WhatsApp at +1 (240) 370-1128 or email firstclass.styles1@gmail.com, and the salon can help.";
+ }
+ function add(text,isUser){const el=document.createElement("div");el.className="help-message"+(isUser?" user":"");el.textContent=text;log.appendChild(el);log.scrollTop=log.scrollHeight;}
+ function ask(q){const clean=q.trim();if(!clean)return;add(clean,true);add(respond(clean),false);}
+ function setOpen(open){panel.classList.toggle("open",open);panel.setAttribute("aria-hidden",String(!open));launch.setAttribute("aria-expanded",String(open));if(open)input.focus();}
+ launch.addEventListener("click",()=>setOpen(!panel.classList.contains("open")));
+ close.addEventListener("click",()=>setOpen(false));
+ form.addEventListener("submit",e=>{e.preventDefault();ask(input.value);input.value="";input.focus();});
+ panel.querySelectorAll("[data-help]").forEach(b=>b.addEventListener("click",()=>ask(b.dataset.help)));
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))setOpen(false);});
+})();
+
 </script>
 </body>
 </html>
