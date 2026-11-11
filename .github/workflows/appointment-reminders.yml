@@ -1,0 +1,30 @@
+name: First Class Styles appointment reminders
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: first-class-styles-reminders
+  cancel-in-progress: false
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the reminder service
+        env:
+          REMINDER_CRON_SECRET: ${{ secrets.REMINDER_CRON_SECRET }}
+        run: |
+          if [ -z "$REMINDER_CRON_SECRET" ]; then
+            echo "REMINDER_CRON_SECRET is not configured in GitHub Actions."
+            exit 1
+          fi
+          curl --fail --silent --show-error \
+            --retry 2 --retry-delay 10 \
+            -H "Authorization: Bearer $REMINDER_CRON_SECRET" \
+            "https://first-class-styles.vercel.app/api/reminders"
