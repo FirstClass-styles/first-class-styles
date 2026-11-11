@@ -86,6 +86,15 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 .help-disclaimer{padding:0 14px 12px;color:var(--muted);font-size:.72rem}
 @media(max-width:760px){.faq-grid{grid-template-columns:1fr}.help-launch{right:14px;bottom:14px}.help-panel{right:14px;bottom:76px}}
 
+ 
+.booking-confirmation{display:none;margin:0 0 20px;padding:20px;border:1px solid var(--gold);border-radius:18px;background:linear-gradient(145deg,#211c15,#17130f)}
+.booking-confirmation.show{display:block}
+.booking-confirmation h3{margin:0 0 8px;color:var(--gold2)}
+.booking-confirmation p{margin:8px 0;color:var(--muted)}
+.booking-confirmation .confirmation-status{color:var(--gold2);font-weight:800}
+.booking-confirmation .confirmation-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+.booking-confirmation .confirmation-ref{font-size:.8rem;overflow-wrap:anywhere}
+
 </style>
 </head>
 
@@ -158,6 +167,14 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
       <div class="days" id="calendarDays"></div><div class="selected-date" id="selectedDate">Select an available date.</div>
     </div>
     <div class="booking-form-card">
+      <div class="booking-confirmation" id="bookingConfirmation" role="status" aria-live="polite">
+        <h3>We received your booking request</h3>
+        <p id="confirmationSummary"></p>
+        <p class="confirmation-status">Not confirmed yet — $25 deposit verification is still pending.</p>
+        <p>Please contact the salon on WhatsApp for current deposit instructions. Do not send a deposit to an unverified account or number.</p>
+        <div class="confirmation-actions"><a class="btn" id="confirmationWhatsApp" href="https://wa.me/12403701128" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a><a class="btn secondary" href="#contact">Salon Contact Details</a></div>
+        <p class="confirmation-ref" id="confirmationReference"></p>
+      </div>
       <form id="bookingForm">
         <div class="form-grid"><div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" required></div><div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div></div>
         <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email"></div>
@@ -344,7 +361,18 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   const response=await fetch("/api/bookings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
   const result=await response.json();
   if(!response.ok)throw new Error(result.error||"Unable to save booking.");
-  toast("Your booking request has been received. Your appointment will be confirmed shortly. The $25 non-refundable deposit must be verified. Contact the salon on WhatsApp for payment details.",10000);
+  const confirmation=document.getElementById("bookingConfirmation");
+  const summary=document.getElementById("confirmationSummary");
+  const whatsapp=document.getElementById("confirmationWhatsApp");
+  const reference=document.getElementById("confirmationReference");
+  const prettyDate=new Date(d.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  const prettyTime=new Date("2000-01-01T"+d.time+":00").toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  summary.textContent=d.service+" · "+prettyDate+" at "+prettyTime+" · 4 hours";
+  const message="Hello First Class Styles! I submitted a booking request and would like the official $25 deposit instructions.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nRequested date: "+prettyDate+"\nRequested time: "+prettyTime+"\nPlease confirm the payment details. I understand my appointment is not confirmed until the deposit is verified.";
+  whatsapp.href="https://wa.me/"+BUSINESS_WHATSAPP+"?text="+encodeURIComponent(message);
+  reference.textContent="Request received. Check your email if you provided one; the salon will send an update after reviewing your deposit.";
+  confirmation.classList.add("show");
+  confirmation.scrollIntoView({behavior:"smooth",block:"center"});
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
   await loadAvailability();
  }catch(error){
