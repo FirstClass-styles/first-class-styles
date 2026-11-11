@@ -194,7 +194,7 @@ document.querySelectorAll(".nav a").forEach(a=>a.addEventListener("click",()=>{n
 window.addEventListener("scroll",()=>header.classList.toggle("scrolled",scrollY>10),{passive:true});
 
 const toastEl=document.getElementById("toast");
-function toast(msg){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>toastEl.classList.remove("show"),3200)}
+function toast(msg,duration=5000){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>toastEl.classList.remove("show"),duration)}
 function openOverlay(id){document.getElementById(id).classList.add("open");document.getElementById(id).setAttribute("aria-hidden","false");document.body.classList.add("lock")}
 function closeOverlay(id){document.getElementById(id).classList.remove("open");document.getElementById(id).setAttribute("aria-hidden","true");if(!document.querySelector(".overlay.open"))document.body.classList.remove("lock")}
 document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeOverlay(b.dataset.close)));
@@ -301,7 +301,7 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   const response=await fetch("/api/bookings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
   const result=await response.json();
   if(!response.ok)throw new Error(result.error||"Unable to save booking.");
-  toast("Request saved. Your $25 deposit is pending salon verification.");
+  toast("Booking request received — your appointment is NOT confirmed yet. The $25 non-refundable deposit must be verified by the salon. Please contact us on WhatsApp for deposit payment details. We will confirm your appointment after payment is verified.",10000);
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
   await loadAvailability();
  }catch(error){
