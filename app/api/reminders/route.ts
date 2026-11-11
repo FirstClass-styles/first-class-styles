@@ -44,6 +44,28 @@ type Appointment = {
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // A manual test sends only to the salon inbox and never reads or changes appointments.
+  if (request.nextUrl.searchParams.get("test") === "1") {
+    try {
+      await sendEmail(
+        OWNER_EMAIL,
+        "Test appointment reminder — First Class Styles",
+        [
+          "This is a test of the First Class Styles appointment reminder email system.",
+          "",
+          "The reminder email service is able to send messages successfully.",
+          "No customer appointment was accessed or changed.",
+          "",
+          "First Class Styles – Salon & Hair Spa",
+        ].join("\\n"),
+      );
+      return NextResponse.json({ success: true, test_email_sent: true, recipient: OWNER_EMAIL });
+    } catch (error) {
+      console.error("Reminder test email failed:", error);
+      return NextResponse.json({ error: "Test reminder email could not be sent." }, { status: 503 });
+    }
+  }
+
   try {
     const now = Date.now();
     // The hourly free scheduler checks a one-hour window around the 24-hour mark.
