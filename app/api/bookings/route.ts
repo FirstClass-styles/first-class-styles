@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { bookingDateTime, sendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -177,6 +178,46 @@ export async function POST(request: NextRequest) {
       return jsonError("We couldn't save your booking right now. Please try again shortly.", 503);
     }
 
+    const appointmentTime = bookingDateTime(startsAt.toISOString());
+    const salonMessage = [
+      "A new booking request has been submitted.",
+      "",
+      "Customer: " + name,
+      "Phone: " + phone,
+      "Email: " + (email || "Not provided"),
+      "Service: " + service,
+      "Requested appointment: " + appointmentTime,
+      "Duration: 4 hours",
+      "Deposit: $25 — pending verification",
+      notes ? "Customer notes: " + notes : "",
+      "",
+      "Review this request in the salon admin dashboard: https://first-class-styles.vercel.app/admin",
+    ].filter(Boolean).join("\n");
+
+    const customerMessage = [
+      "Hello " + name + ",",
+      "",
+      "We received your appointment request at First Class Styles – Salon & Hair Spa.",
+      "",
+      "Service: " + service,
+      "Requested appointment: " + appointmentTime,
+      "Deposit: $25 non-refundable — pending salon verification",
+      "",
+      "Your appointment is not confirmed yet. The salon will verify your deposit and send you an update. For payment details, contact us on WhatsApp at +1 (240) 370-1128.",
+      "",
+      "First Class Styles",
+      "+1 (240) 370-1128",
+    ].join("\n");
+
+    const emailTasks = [
+      sendEmail("firstclass.styles1@gmail.com", "New salon booking request — " + name, salonMessage),
+      ...(email ? [sendEmail(email, "We received your booking request — First Class Styles", customerMessage)] : []),
+    ];
+    const emailResults = await Promise.allSettled(emailTasks);
+    emailResults.forEach((result) => {
+      if (result.status === "rejected") console.error("Booking notification email failed:", result.reason);
+    });
+
     return NextResponse.json({
       success: true,
       message: "Your appointment request has been saved. The $25 deposit is pending verification by the salon.",
@@ -186,6 +227,7 @@ export async function POST(request: NextRequest) {
         status: "pending_payment",
         deposit_amount: 25,
       },
+      email_notifications: emailResults.every((result) => result.status === "fulfilled") ? "sent" : "not_confirmed",
     }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Booking submission error:", error);
