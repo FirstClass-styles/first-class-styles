@@ -3,9 +3,26 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  metadataBase: new URL('https://first-class-styles.vercel.app'),
+  title: 'First Class Styles | Salon & Hair Spa in Suitland, MD',
+  description:
+    'Book your salon appointment at First Class Styles in Suitland, Maryland. Explore sew-ins, quick weaves, silk presses, and signature hair care.',
+  applicationName: 'First Class Styles – Salon & Hair Spa',
+  openGraph: {
+    title: 'First Class Styles | Salon & Hair Spa',
+    description:
+      'Professional hair services in Suitland, Maryland. Request your appointment online.',
+    url: 'https://first-class-styles.vercel.app',
+    siteName: 'First Class Styles – Salon & Hair Spa',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'First Class Styles | Salon & Hair Spa',
+    description:
+      'Professional hair services in Suitland, Maryland. Request your appointment online.',
+  },
   icons: {
     icon: [
       {
@@ -26,11 +43,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'dark',
+  themeColor: '#080706',
 }
 
 export default function RootLayout({
