@@ -9,34 +9,44 @@ async function smtpSend(to: string, subject: string, body: string) {
   const socket = tls.connect({ host: "smtp.gmail.com", port: 465, servername: "smtp.gmail.com" });
   socket.setTimeout(15000);
   let buffer = "";
-  let pending: Array<(value: string) => void> = [];
+  const lines: string[] = [];
+  const waiters: Array<(line: string) => void> = [];
   let closedError: Error | null = null;
 
   socket.on("data", (chunk: Buffer) => {
     buffer += chunk.toString("utf8");
-    const lines = buffer.split("\r\n");
-    buffer = lines.pop() || "";
-    for (const line of lines) {
-      const waiter = pending[0];
+    const parts = buffer.split("\r\n");
+    buffer = parts.pop() || "";
+    for (const line of parts) {
+      const waiter = waiters.shift();
       if (waiter) waiter(line);
-      else buffer = line + "\r\n" + buffer;
+      else lines.push(line);
     }
   });
-  socket.on("error", (error) => { closedError = error; while (pending.length) pending.shift()!(""); });
-  socket.on("timeout", () => { closedError = new Error("Email connection timed out."); socket.destroy(); });
+  socket.on("error", (error) => {
+    closedError = error;
+    while (waiters.length) waiters.shift()!(" ");
+  });
+  socket.on("timeout", () => {
+    closedError = new Error("Email connection timed out.");
+    socket.destroy();
+  });
 
+  const readLine = () => new Promise<string>((resolve, reject) => {
+    if (lines.length) return resolve(lines.shift()!);
+    if (closedError) return reject(closedError);
+    waiters.push((line) => line.trim() ? resolve(line) : reject(closedError || new Error("Email server closed the connection.")));
+  });
   const readResponse = async () => {
-    const lines: string[] = [];
+    const response: string[] = [];
     while (true) {
-      if (closedError) throw closedError;
-      const line = await new Promise<string>((resolve) => pending.push(resolve));
-      if (!line) throw closedError || new Error("Email server closed the connection.");
-      lines.push(line);
+      const line = await readLine();
+      response.push(line);
       if (/^\d{3} /.test(line)) break;
     }
-    const response = lines.join("\n");
-    if (!/^[23]/.test(lines[lines.length - 1])) throw new Error("Email server rejected a command: " + response);
-    return response;
+    const last = response[response.length - 1];
+    if (!/^[23]/.test(last)) throw new Error("Email server rejected a command: " + response.join("\n"));
+    return response.join("\n");
   };
   const command = async (value: string) => {
     socket.write(value + "\r\n");
