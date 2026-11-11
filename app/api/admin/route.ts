@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { bookingDateTime, sendEmail } from "@/lib/email";
 import { adminConfigured, clearAdminSession, sameOrigin, setAdminSession, validAdminSession } from "@/lib/admin-auth";
 import { timingSafeEqual } from "node:crypto";
 
@@ -95,6 +96,19 @@ export async function PATCH(request: NextRequest) {
   else return replyError("Choose a valid appointment action.");
 
   try {
+    const lookup = new URLSearchParams({
+      id: "eq." + body.id,
+      select: "id,customer_name,customer_email,service,starts_at,status,deposit_status",
+    });
+    const beforeResponse = await database("appointments?" + lookup.toString());
+    if (!beforeResponse.ok) {
+      console.error("Admin appointment lookup failed:", beforeResponse.status);
+      return replyError("The appointment could not be loaded.", 503);
+    }
+    const beforeRows = await beforeResponse.json();
+    if (!Array.isArray(beforeRows) || beforeRows.length === 0) return replyError("Appointment not found.", 404);
+    const previous = beforeRows[0];
+
     const query = new URLSearchParams({ id: "eq." + body.id, select: "id,status,deposit_status" });
     const response = await database("appointments?" + query.toString(), {
       method: "PATCH",
@@ -106,6 +120,64 @@ export async function PATCH(request: NextRequest) {
     }
     const rows = await response.json();
     if (!Array.isArray(rows) || rows.length === 0) return replyError("Appointment not found.", 404);
+
+    const changed = previous.status !== rows[0].status || previous.deposit_status !== rows[0].deposit_status;
+    if (changed && previous.customer_email) {
+      const appointmentTime = bookingDateTime(previous.starts_at);
+      let subject = "";
+      let message = "";
+      if (body.action === "verify_deposit") {
+        subject = "Your appointment is confirmed — First Class Styles";
+        message = [
+          "Hello " + previous.customer_name + ",",
+          "",
+          "Your $25 deposit has been verified and your appointment at First Class Styles is now confirmed.",
+          "",
+          "Service: " + previous.service,
+          "Appointment: " + appointmentTime,
+          "",
+          "Please pay the remaining balance in cash at the salon.",
+          "We look forward to seeing you!",
+          "",
+          "First Class Styles",
+          "+1 (240) 370-1128",
+        ].join("\n");
+      } else if (body.action === "reject_deposit") {
+        subject = "Update about your salon deposit — First Class Styles";
+        message = [
+          "Hello " + previous.customer_name + ",",
+          "",
+          "We could not verify the $25 deposit for your requested appointment.",
+          "Your appointment is not confirmed. Please contact First Class Styles on WhatsApp at +1 (240) 370-1128 to discuss the next step.",
+          "",
+          "Requested appointment: " + appointmentTime,
+          "Service: " + previous.service,
+          "",
+          "First Class Styles",
+        ].join("\n");
+      } else {
+        subject = "Your salon appointment has been cancelled — First Class Styles";
+        message = [
+          "Hello " + previous.customer_name + ",",
+          "",
+          "Your appointment at First Class Styles has been cancelled.",
+          "",
+          "Appointment: " + appointmentTime,
+          "Service: " + previous.service,
+          "",
+          "Please contact us on WhatsApp at +1 (240) 370-1128 if you have questions.",
+          "",
+          "First Class Styles",
+        ].join("\n");
+      }
+
+      try {
+        await sendEmail(previous.customer_email, subject, message);
+      } catch (emailError) {
+        console.error("Appointment status email failed:", emailError);
+      }
+    }
+
     return NextResponse.json({ success: true, appointment: rows[0] }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Admin appointment update error:", error);
