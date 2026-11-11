@@ -301,7 +301,7 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   const response=await fetch("/api/bookings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
   const result=await response.json();
   if(!response.ok)throw new Error(result.error||"Unable to save booking.");
-  toast("Booking request received — your appointment is NOT confirmed yet. The $25 non-refundable deposit must be verified by the salon. Please contact us on WhatsApp for deposit payment details. We will confirm your appointment after payment is verified.",10000);
+  toast("Their booking request has been received. Their appointment will be confirmed shortly. The $25 non-refundable deposit must be verified. They should contact the salon on WhatsApp for payment details.",10000);
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
   await loadAvailability();
  }catch(error){
