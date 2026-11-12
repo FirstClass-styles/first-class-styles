@@ -122,6 +122,7 @@ export async function PATCH(request: NextRequest) {
     if (!Array.isArray(rows) || rows.length === 0) return replyError("Appointment not found.", 404);
 
     const changed = previous.status !== rows[0].status || previous.deposit_status !== rows[0].deposit_status;
+    let emailNotification: "sent" | "failed" | "not_applicable" = "not_applicable";
     if (changed && previous.customer_email) {
       const appointmentTime = bookingDateTime(previous.starts_at);
       let subject = "";
@@ -173,12 +174,14 @@ export async function PATCH(request: NextRequest) {
 
       try {
         await sendEmail(previous.customer_email, subject, message);
+        emailNotification = "sent";
       } catch (emailError) {
+        emailNotification = "failed";
         console.error("Appointment status email failed:", emailError);
       }
     }
 
-    return NextResponse.json({ success: true, appointment: rows[0] }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ success: true, appointment: rows[0], email_notification: emailNotification }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Admin appointment update error:", error);
     return replyError("The appointment could not be updated.", 503);
