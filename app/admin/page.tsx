@@ -141,8 +141,8 @@ export default function AdminPage() {
                     <div className="mt-4 grid gap-2 text-sm text-[#ddd6ca] sm:grid-cols-2"><p><span className="text-[#aaa49a]">Date:</span> {dateTime(a.starts_at)}</p><p><span className="text-[#aaa49a]">Duration:</span> 4 hours</p><p><span className="text-[#aaa49a]">Phone:</span> <a className="text-[#f5dc9d] underline" href={"tel:" + a.customer_phone}>{a.customer_phone}</a></p><p><span className="text-[#aaa49a]">Email:</span> {a.customer_email || "Not provided"}</p><p><span className="text-[#aaa49a]">Deposit:</span> {money(a.deposit_amount)} · {a.deposit_status}</p></div>
                     {a.customer_notes && <p className="mt-3 rounded-lg bg-white/5 p-3 text-sm text-[#aaa49a]"><span className="font-semibold text-[#ddd6ca]">Customer notes:</span> {a.customer_notes}</p>}
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {a.customer_phone.replace(/\\D/g, "").length >= 10 && <a
-                        href={"https://wa.me/" + a.customer_phone.replace(/\\D/g, "") + "?text=" + encodeURIComponent("Hello " + a.customer_name + ", this is First Class Styles. I am contacting you about your " + a.service + " appointment on " + dateTime(a.starts_at) + ". Current appointment status: " + a.status.replaceAll("_", " ") + ". Deposit status: " + a.deposit_status + ". Please reply if you have any questions.")}
+                      {a.customer_phone.replace(/\D/g, "").length >= 10 && <a
+                        href={"https://wa.me/" + a.customer_phone.replace(/\D/g, "") + "?text=" + encodeURIComponent("Hello " + a.customer_name + ", this is First Class Styles. I am contacting you about your " + a.service + " appointment on " + dateTime(a.starts_at) + ". Current appointment status: " + a.status.replaceAll("_", " ") + ". Deposit status: " + a.deposit_status + ". Please reply if you have any questions.")}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
