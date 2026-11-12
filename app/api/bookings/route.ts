@@ -121,8 +121,9 @@ export async function POST(request: NextRequest) {
     ];
     const times = ["09:00", "10:00", "11:00", "12:00"];
 
-    if (!name || name.length > 120 || !phone || phone.length > 40) {
-      return jsonError("Please enter your name and a valid contact phone number.");
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (!name || name.length > 120 || !phone || phone.length > 40 || phoneDigits.length < 10 || phoneDigits.length > 15) {
+      return jsonError("Please enter a valid phone number with country code, including 10 to 15 digits.");
     }
     if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return jsonError("Please enter a valid email address.");
