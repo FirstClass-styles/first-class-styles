@@ -29,6 +29,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
@@ -84,11 +85,14 @@ export default function AdminPage() {
   }
 
   const filtered = useMemo(() => appointments.filter((a) => {
-    if (filter === "pending") return a.deposit_status === "pending";
-    if (filter === "confirmed") return a.status === "confirmed";
-    if (filter === "cancelled") return a.status === "cancelled";
-    return true;
-  }), [appointments, filter]);
+    const matchesFilter = filter === "pending" ? a.deposit_status === "pending"
+      : filter === "confirmed" ? a.status === "confirmed"
+      : filter === "cancelled" ? a.status === "cancelled" : true;
+    const term = search.trim().toLowerCase();
+    const matchesSearch = !term || [a.customer_name, a.customer_phone, a.customer_email || "", a.service]
+      .some((value) => value.toLowerCase().includes(term));
+    return matchesFilter && matchesSearch;
+  }), [appointments, filter, search]);
 
   const pendingCount = appointments.filter((a) => a.deposit_status === "pending").length;
   const confirmedCount = appointments.filter((a) => a.status === "confirmed").length;
@@ -123,8 +127,14 @@ export default function AdminPage() {
             </section>
 
             <section className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">Appointments</h2><p className="mt-1 text-sm text-[#aaa49a]">Latest 200 records · times shown in Maryland local time</p></div><select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-xl border border-[#d7b56d]/30 bg-[#080706] px-3 py-2 text-sm"><option value="all">All appointments</option><option value="pending">Deposit pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select></div>
-              {loading ? <p className="py-10 text-center text-[#aaa49a]">Loading appointments…</p> : filtered.length === 0 ? <p className="py-10 text-center text-[#aaa49a]">No appointments in this view yet.</p> : (
+              <div className="mb-5 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">Appointments</h2><p className="mt-1 text-sm text-[#aaa49a]">Latest 200 records · times shown in Maryland local time</p></div>
+                  <select aria-label="Filter appointments" value={filter} onChange={(e) => setFilter(e.target.value)} className="w-full rounded-xl border border-[#d7b56d]/30 bg-[#080706] px-3 py-3 text-sm sm:w-auto"><option value="all">All appointments</option><option value="pending">Deposit pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select>
+                </div>
+                <input type="search" aria-label="Search appointments" placeholder="Search customer, phone, email or service…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-xl border border-[#d7b56d]/30 bg-[#080706] px-4 py-3 text-sm text-[#faf8f3] placeholder:text-[#777168] outline-none focus:border-[#d7b56d]" />
+                <p className="text-xs text-[#aaa49a]">{filtered.length} appointment{filtered.length === 1 ? "" : "s"} shown</p>
+              </div>
+              {loading ? <p className="py-10 text-center text-[#aaa49a]">Loading appointments…</p> : filtered.length === 0 ? <p className="py-10 text-center text-[#aaa49a]">No appointments match this search or filter.</p> : (
                 <div className="space-y-4">
                   {filtered.map((a) => <article key={a.id} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">{a.customer_name}</h3><p className="text-sm text-[#d7b56d]">{a.service}</p></div><div className="flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-white/10 px-3 py-1">{a.status.replaceAll("_", " ")}</span><span className={"rounded-full px-3 py-1 " + (a.deposit_status === "verified" ? "bg-emerald-900/50 text-emerald-200" : a.deposit_status === "rejected" ? "bg-red-900/40 text-red-200" : "bg-amber-900/40 text-amber-100")}>Deposit: {a.deposit_status}</span></div></div>
