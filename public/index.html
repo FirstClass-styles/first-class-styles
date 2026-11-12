@@ -96,6 +96,11 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 .booking-confirmation .confirmation-ref{font-size:.8rem;overflow-wrap:anywhere}
 
 </style>
+
+<style>
+.gallery-photo{cursor:zoom-in;overflow:hidden;position:relative}.gallery-photo img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .25s ease}.gallery-photo:hover img,.gallery-photo:focus-visible img{transform:scale(1.035)}.gallery-photo:focus-visible{outline:3px solid #d7b56d;outline-offset:4px}
+#galleryLightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:24px}#galleryLightbox.open{display:flex}#galleryLightbox img{max-width:min(94vw,1100px);max-height:86vh;object-fit:contain;border-radius:8px}#galleryLightbox button{position:absolute;border:1px solid rgba(255,255,255,.45);background:#17130f;color:#fff;border-radius:50%;width:44px;height:44px;font-size:28px;line-height:1;cursor:pointer}#galleryLightbox .lightbox-close{top:18px;right:18px}#galleryLightbox .lightbox-prev{left:18px}#galleryLightbox .lightbox-next{right:18px}@media(max-width:600px){#galleryLightbox{padding:12px}#galleryLightbox .lightbox-prev{left:8px}#galleryLightbox .lightbox-next{right:8px}}
+</style>
 </head>
 
 <body>
@@ -147,11 +152,11 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 <section class="section" id="gallery"><div class="container">
   <div class="section-head"><div><span class="eyebrow">Portfolio</span><h2>Gallery</h2></div><p class="lead">A look at the hairstyles and salon work at First Class Styles.</p></div>
   <div class="grid gallery">
-    <figure data-lightbox="/gallery-straight-and-curls.jpg"><img src="/gallery-straight-and-curls.jpg" alt="Straight hairstyle with curls" loading="lazy"><figcaption>Straight &amp; Curls</figcaption></figure>
-    <figure data-lightbox="/gallery-twist-style.jpg"><img src="/gallery-twist-style.jpg" alt="Twist hairstyle" loading="lazy"><figcaption>Twist Style</figcaption></figure>
-    <figure data-lightbox="/gallery-blonde-waves.jpg"><img src="/gallery-blonde-waves.jpg" alt="Blonde waves hairstyle" loading="lazy"><figcaption>Blonde Waves</figcaption></figure>
-    <figure data-lightbox="/gallery-curly-style.jpg"><img src="/gallery-curly-style.jpg" alt="Curly hairstyle" loading="lazy"><figcaption>Curly Style</figcaption></figure>
-    <figure data-lightbox="/gallery-long-layers.jpg"><img src="/gallery-long-layers.jpg" alt="Long layered hairstyle" loading="lazy"><figcaption>Long Layers</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-straight-and-curls.jpg" data-open-label="photo"><img src="/gallery-straight-and-curls.jpg" alt="Straight hairstyle with curls" loading="lazy"><figcaption>Straight &amp; Curls</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-twist-style.jpg" data-open-label="photo"><img src="/gallery-twist-style.jpg" alt="Twist hairstyle" loading="lazy"><figcaption>Twist Style</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-blonde-waves.jpg" data-open-label="photo"><img src="/gallery-blonde-waves.jpg" alt="Blonde waves hairstyle" loading="lazy"><figcaption>Blonde Waves</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-curly-style.jpg" data-open-label="photo"><img src="/gallery-curly-style.jpg" alt="Curly hairstyle" loading="lazy"><figcaption>Curly Style</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-long-layers.jpg" data-open-label="photo"><img src="/gallery-long-layers.jpg" alt="Long layered hairstyle" loading="lazy"><figcaption>Long Layers</figcaption></figure>
   </div>
 </div></section>
 
@@ -428,6 +433,24 @@ document.getElementById("year").textContent=new Date().getFullYear();
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))setOpen(false);});
 })();
 
+</script>
+
+<script>
+(function(){
+ const photos=[...document.querySelectorAll('#gallery .gallery-photo')];
+ if(!photos.length)return;
+ const overlay=document.createElement('div');overlay.id='galleryLightbox';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Salon photo viewer');
+ overlay.innerHTML='<button class="lightbox-close" type="button" aria-label="Close photo viewer">×</button><button class="lightbox-prev" type="button" aria-label="Previous photo">‹</button><img alt=""><button class="lightbox-next" type="button" aria-label="Next photo">›</button>';
+ document.body.appendChild(overlay);
+ const image=overlay.querySelector('img'),close=overlay.querySelector('.lightbox-close'),prev=overlay.querySelector('.lightbox-prev'),next=overlay.querySelector('.lightbox-next');let index=0,lastFocus=null;
+ function show(n){index=(n+photos.length)%photos.length;const img=photos[index].querySelector('img');image.src=img.currentSrc||img.src;image.alt=img.alt;}
+ function open(n){lastFocus=document.activeElement;show(n);overlay.classList.add('open');document.body.style.overflow='hidden';close.focus();}
+ function shut(){overlay.classList.remove('open');document.body.style.overflow='';if(lastFocus)lastFocus.focus();}
+ photos.forEach((photo,n)=>{photo.addEventListener('click',()=>open(n));photo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(n);}});});
+ close.addEventListener('click',shut);prev.addEventListener('click',()=>show(index-1));next.addEventListener('click',()=>show(index+1));
+ overlay.addEventListener('click',e=>{if(e.target===overlay)shut();});
+ document.addEventListener('keydown',e=>{if(!overlay.classList.contains('open'))return;if(e.key==='Escape')shut();if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1);});
+})();
 </script>
 </body>
 </html>
