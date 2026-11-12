@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
           "No customer appointment was accessed or changed.",
           "",
           "First Class Styles – Salon & Hair Spa",
-        ].join("\\n"),
+        ].join("\n"),
       );
       return NextResponse.json({ success: true, test_email_sent: true, recipient: OWNER_EMAIL });
     } catch (error) {
