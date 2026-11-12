@@ -66,7 +66,14 @@ export default function AdminPage() {
       const response = await fetch("/api/admin", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Update failed.");
-      setNotice(labels[action]); await load();
+      const emailNote = data.email_notification === "sent"
+        ? " Customer email sent."
+        : data.email_notification === "failed"
+          ? " Warning: the appointment was updated, but the customer email could not be sent. Please contact the customer directly."
+          : data.email_notification === "not_applicable"
+            ? " No customer email was sent because no email address was provided."
+            : "";
+      setNotice(labels[action] + emailNote); await load();
     } catch (e) { setError(e instanceof Error ? e.message : "Update failed."); }
     finally { setBusy(""); }
   }
