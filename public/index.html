@@ -322,7 +322,9 @@ function refreshTimes(){
  if(!duration){timeSelect.disabled=true;timeSelect.innerHTML='<option value="">Choose a service first</option>';messageEl.textContent="Choose your service to see suitable appointment times.";messageEl.hidden=false;return;}
  timeOptions.forEach(([value,label])=>{
   const option=document.createElement("option");option.value=value;option.textContent=label;
-  if(slotTaken(key,value)){option.disabled=true;option.textContent=label+" — already reserved";booked.push(label);}
+  const end=new Date(localDateTimeToUtc(key,value).getTime()+duration*60*1000),endParts=nyParts(end);
+  if(endParts.hour>"16"||(endParts.hour==="16"&&endParts.minute!=="00")){option.disabled=true;option.textContent=label+" — service ends after closing";outsideHours.push(label);}
+  else if(slotTaken(key,value)){option.disabled=true;option.textContent=label+" — already reserved";booked.push(label);}
   else if(!isAtLeast24Hours(key,value)){option.disabled=true;option.textContent=label+" — less than 24 hours’ notice";tooSoon.push(label);}
   else{available.push(value);}
   timeSelect.appendChild(option);
@@ -332,6 +334,7 @@ function refreshTimes(){
  if(booked.length===timeOptions.length){
   messageEl.textContent="Appointment time unavailable. All appointment times on this date have already been reserved by another client. Please select another available date.";
   messageEl.hidden=false;
+ }else if(available.length===0&&outsideHours.length){messageEl.textContent="This service does not fit at the remaining start times. Please choose an earlier time or another date.";messageEl.hidden=false;
  }else if(available.length===0&&tooSoon.length){
   messageEl.textContent="Appointment time unavailable. Bookings must be made at least 24 hours in advance. Please choose a later date.";
   messageEl.hidden=false;
