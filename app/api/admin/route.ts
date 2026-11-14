@@ -91,14 +91,14 @@ export async function PATCH(request: NextRequest) {
 
   let update: Record<string, string>;
   if (body.action === "verify_deposit") update = { deposit_status: "verified", status: "confirmed" };
-  else if (body.action === "reject_deposit") update = { deposit_status: "rejected", status: "pending_payment" };
+  else if (body.action === "reject_deposit") update = { deposit_status: "rejected", status: "cancelled" };
   else if (body.action === "cancel") update = { status: "cancelled" };
   else return replyError("Choose a valid appointment action.");
 
   try {
     const lookup = new URLSearchParams({
       id: "eq." + body.id,
-      select: "id,customer_name,customer_email,service,starts_at,status,deposit_status",
+      select: "id,customer_name,customer_email,service,starts_at,ends_at,status,deposit_status",
     });
     const beforeResponse = await database("appointments?" + lookup.toString());
     if (!beforeResponse.ok) {
@@ -161,7 +161,8 @@ export async function PATCH(request: NextRequest) {
         message = [
           "Hello " + previous.customer_name + ",",
           "",
-          "Your appointment at First Class Styles has been cancelled.",
+          "Your appointment at First Class Styles has been cancelled and the time has been released for other clients.",
+          previous.deposit_status === "verified" ? "Your $25 deposit is non-refundable under the salon policy and will be retained." : "No deposit was verified for this appointment.",
           "",
           "Appointment: " + appointmentTime,
           "Service: " + previous.service,
@@ -185,5 +186,26 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error("Admin appointment update error:", error);
     return replyError("The appointment could not be updated.", 503);
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  if (!sameOrigin(request)) return replyError("Request origin could not be verified.", 403);
+  if (!validAdminSession(request)) return replyError("Your admin session has expired. Please sign in again.", 401);
+  const id = request.nextUrl.searchParams.get("id") || "";
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return replyError("Invalid appointment reference.");
+  try {
+    const query = new URLSearchParams({ id: "eq." + id, select: "id" });
+    const response = await database("appointments?" + query.toString(), { method: "DELETE" });
+    if (!response.ok) {
+      console.error("Admin appointment delete failed:", response.status, await response.text());
+      return replyError("The test record could not be deleted.", 503);
+    }
+    const rows = await response.json();
+    if (!Array.isArray(rows) || rows.length === 0) return replyError("Appointment not found.", 404);
+    return NextResponse.json({ success: true }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    console.error("Admin appointment delete error:", error);
+    return replyError("The test record could not be deleted.", 503);
   }
 }
