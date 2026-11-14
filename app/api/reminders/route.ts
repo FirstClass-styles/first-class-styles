@@ -123,6 +123,15 @@ export async function GET(request: NextRequest) {
       }
 
       const when = bookingDateTime(appointment.starts_at);
+      const serviceDurations: Record<string, number> = {
+        "Closure Sew-In": 270, "Loc Journey": 150, "Loc Refresh": 120,
+        "Quick Weave": 150, "Signature Sew-In with Leave Out": 300,
+        "Signature Shampoo & Blow Dry": 45, "Signature Silk Press": 120,
+      };
+      const minutes = serviceDurations[appointment.service] || 0;
+      const duration = minutes >= 60
+        ? (minutes % 60 ? Math.floor(minutes / 60) + " hours " + (minutes % 60) + " minutes" : minutes / 60 + " hours")
+        : minutes + " minutes";
       const customerMessage = [
         "Hello " + appointment.customer_name + ",",
         "",
@@ -130,6 +139,7 @@ export async function GET(request: NextRequest) {
         "",
         "Service: " + appointment.service,
         "Appointment: " + when,
+        "Estimated service duration: " + duration,
         "",
         "Please arrive on time. The remaining balance is payable in cash at the salon.",
         "If you need assistance, contact us on WhatsApp at +1 (240) 370-1128.",
@@ -144,8 +154,9 @@ export async function GET(request: NextRequest) {
         "Customer email: " + (appointment.customer_email || "Not provided"),
         "Service: " + appointment.service,
         "Appointment: " + when,
+        "Estimated service duration: " + duration,
         "",
-        "Deposit verified; appointment confirmed.",
+        "Deposit verified; appointment confirmed. Please prepare for the scheduled service duration.",
       ].join("\n");
 
       try {
