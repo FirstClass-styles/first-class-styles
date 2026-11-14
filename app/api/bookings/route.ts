@@ -93,7 +93,6 @@ export async function GET() {
         ends_at: item.ends_at,
       })),
       time_zone: TIME_ZONE,
-      duration_minutes: 240,
     }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch (error) {
     console.error("Availability error:", error);
@@ -112,14 +111,14 @@ export async function POST(request: NextRequest) {
     const time = body.time;
     const notes = typeof body.notes === "string" ? body.notes.trim() : "";
 
-    const services = [
-      "Closure Sew-In",
-      "Quick Weave",
-      "Signature Sew-In with Leave Out",
-      "Signature Shampoo & Blow Dry",
-      "Signature Silk Press",
-    ];
-    const times = ["09:00", "10:00", "11:00", "12:00"];
+    const serviceDurations: Record<string, number> = {
+      "Closure Sew-In": 270,
+      "Quick Weave": 150,
+      "Signature Sew-In with Leave Out": 300,
+      "Signature Shampoo & Blow Dry": 45,
+      "Signature Silk Press": 120,
+    };
+    const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
 
     const phoneDigits = phone.replace(/\D/g, "");
     if (!name || name.length > 120 || !phone || phone.length > 40 || phoneDigits.length < 10 || phoneDigits.length > 15) {
@@ -128,8 +127,9 @@ export async function POST(request: NextRequest) {
     if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return jsonError("Please enter a valid email address.");
     }
-    if (!services.includes(service)) return jsonError("Please choose one of the listed salon services.");
+    if (!(service in serviceDurations)) return jsonError("Please choose one of the listed salon services.");
     if (!validDateText(date) || !times.includes(time)) return jsonError("Please choose an available date and start time.");
+    const durationMinutes = serviceDurations[service];
     if (notes.length > 1500) return jsonError("Please shorten your appointment notes.");
 
     const day = new Date(`${date}T12:00:00.000Z`).getUTCDay();
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     }
 
     const startsAt = localDateTimeToUtc(date, time);
-    const endsAt = new Date(startsAt.getTime() + 4 * 60 * 60 * 1000);
+    const endsAt = new Date(startsAt.getTime() + durationMinutes * 60 * 1000);
     if (startsAt.getTime() < Date.now() + 24 * 60 * 60 * 1000) {
       return jsonError("Appointments must be booked at least 24 hours in advance.");
     }
@@ -159,6 +159,7 @@ export async function POST(request: NextRequest) {
         service,
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
+        duration_minutes: durationMinutes,
         status: "pending_payment",
         deposit_amount: 25,
         deposit_status: "pending",
@@ -188,7 +189,7 @@ export async function POST(request: NextRequest) {
       "Email: " + (email || "Not provided"),
       "Service: " + service,
       "Requested appointment: " + appointmentTime,
-      "Duration: 4 hours",
+      "Duration: " + (durationMinutes >= 60 ? (durationMinutes % 60 ? Math.floor(durationMinutes / 60) + " hours " + (durationMinutes % 60) + " minutes" : durationMinutes / 60 + " hours") : durationMinutes + " minutes"),
       "Deposit: $25 — pending verification",
       notes ? "Customer notes: " + notes : "",
       "",
@@ -202,6 +203,7 @@ export async function POST(request: NextRequest) {
       "",
       "Service: " + service,
       "Requested appointment: " + appointmentTime,
+      "Duration: " + (durationMinutes >= 60 ? (durationMinutes % 60 ? Math.floor(durationMinutes / 60) + " hours " + (durationMinutes % 60) + " minutes" : durationMinutes / 60 + " hours") : durationMinutes + " minutes"),
       "Deposit: $25 non-refundable — pending salon verification",
       "",
       "Your appointment is not confirmed yet. The salon will verify your deposit and send you an update. For payment details, contact us on WhatsApp at +1 (240) 370-1128.",
