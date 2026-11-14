@@ -61,10 +61,11 @@ export default function AdminPage() {
 
   async function act(id: string, action: string) {
     const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled." };
-    if (action === "cancel" && !window.confirm("Cancel this appointment?")) return;
+    if (action === "cancel" && !window.confirm("Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
+    if (action === "delete" && !window.confirm("Permanently delete this record? Use only for fake/test appointments. This cannot be undone.")) return;
     setBusy(id); setError(""); setNotice("");
     try {
-      const response = await fetch("/api/admin", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action }) });
+      const response = action === "delete" ? await fetch("/api/admin?id=" + encodeURIComponent(id), { method: "DELETE" }) : await fetch("/api/admin", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Update failed.");
       const emailNote = data.email_notification === "sent"
@@ -74,7 +75,7 @@ export default function AdminPage() {
           : data.email_notification === "not_applicable"
             ? " No customer email was sent because no email address was provided."
             : "";
-      setNotice(labels[action] + emailNote); await load();
+      setNotice(action === "delete" ? "Test record permanently deleted." : labels[action] + emailNote); await load();
     } catch (e) { setError(e instanceof Error ? e.message : "Update failed."); }
     finally { setBusy(""); }
   }
@@ -94,6 +95,8 @@ export default function AdminPage() {
     return matchesFilter && matchesSearch;
   }), [appointments, filter, search]);
 
+  const durations: Record<string, number> = { "Closure Sew-In": 270, "Loc Journey": 150, "Loc Refresh": 120, "Quick Weave": 150, "Signature Sew-In with Leave Out": 300, "Signature Shampoo & Blow Dry": 45, "Signature Silk Press": 120 };
+  const durationLabel = (service: string) => { const minutes = durations[service] || 0; return minutes ? (minutes >= 60 ? (minutes % 60 ? Math.floor(minutes / 60) + " hr " + (minutes % 60) + " min" : minutes / 60 + " hr") : minutes + " min") : "Not set"; };
   const pendingCount = appointments.filter((a) => a.deposit_status === "pending").length;
   const confirmedCount = appointments.filter((a) => a.status === "confirmed").length;
 
@@ -138,7 +141,7 @@ export default function AdminPage() {
                 <div className="space-y-4">
                   {filtered.map((a) => <article key={a.id} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">{a.customer_name}</h3><p className="text-sm text-[#d7b56d]">{a.service}</p></div><div className="flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-white/10 px-3 py-1">{a.status.replaceAll("_", " ")}</span><span className={"rounded-full px-3 py-1 " + (a.deposit_status === "verified" ? "bg-emerald-900/50 text-emerald-200" : a.deposit_status === "rejected" ? "bg-red-900/40 text-red-200" : "bg-amber-900/40 text-amber-100")}>Deposit: {a.deposit_status}</span></div></div>
-                    <div className="mt-4 grid gap-2 text-sm text-[#ddd6ca] sm:grid-cols-2"><p><span className="text-[#aaa49a]">Date:</span> {dateTime(a.starts_at)}</p><p><span className="text-[#aaa49a]">Duration:</span> 4 hours</p><p><span className="text-[#aaa49a]">Phone:</span> <a className="text-[#f5dc9d] underline" href={"tel:" + a.customer_phone}>{a.customer_phone}</a></p><p><span className="text-[#aaa49a]">Email:</span> {a.customer_email || "Not provided"}</p><p><span className="text-[#aaa49a]">Deposit:</span> {money(a.deposit_amount)} · {a.deposit_status}</p></div>
+                    <div className="mt-4 grid gap-2 text-sm text-[#ddd6ca] sm:grid-cols-2"><p><span className="text-[#aaa49a]">Date:</span> {dateTime(a.starts_at)}</p><p><span className="text-[#aaa49a]">Duration:</span> {durationLabel(a.service)}</p><p><span className="text-[#aaa49a]">Phone:</span> <a className="text-[#f5dc9d] underline" href={"tel:" + a.customer_phone}>{a.customer_phone}</a></p><p><span className="text-[#aaa49a]">Email:</span> {a.customer_email || "Not provided"}</p><p><span className="text-[#aaa49a]">Deposit:</span> {money(a.deposit_amount)} · {a.deposit_status}</p></div>
                     {a.customer_notes && <p className="mt-3 rounded-lg bg-white/5 p-3 text-sm text-[#aaa49a]"><span className="font-semibold text-[#ddd6ca]">Customer notes:</span> {a.customer_notes}</p>}
                     <div className="mt-4 flex flex-wrap gap-2">
                       {a.customer_phone.replace(/\D/g, "").length >= 10 && <a
@@ -148,7 +151,8 @@ export default function AdminPage() {
                         className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
                       >Message this customer on WhatsApp</a>}
                       {a.deposit_status === "pending" && <><button disabled={busy === a.id} onClick={() => void act(a.id, "verify_deposit")} className="rounded-lg bg-[#d7b56d] px-3 py-2 text-sm font-bold text-[#17110a] disabled:opacity-50">Verify $25 deposit & confirm</button><button disabled={busy === a.id} onClick={() => void act(a.id, "reject_deposit")} className="rounded-lg border border-amber-500/40 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark deposit not received</button></>}
-                      {a.status !== "cancelled" && <button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel appointment</button>}
+                      {a.status !== "cancelled" && <button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button>}
+                      <button disabled={busy === a.id} onClick={() => void act(a.id, "delete")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Delete test record</button>
                     </div>
                   </article>)}
                 </div>
