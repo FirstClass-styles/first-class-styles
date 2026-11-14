@@ -97,8 +97,13 @@ export default function AdminPage() {
 
   const durations: Record<string, number> = { "Closure Sew-In": 270, "Loc Journey": 150, "Loc Refresh": 120, "Quick Weave": 150, "Signature Sew-In with Leave Out": 300, "Signature Shampoo & Blow Dry": 45, "Signature Silk Press": 120 };
   const durationLabel = (service: string) => { const minutes = durations[service] || 0; return minutes ? (minutes >= 60 ? (minutes % 60 ? Math.floor(minutes / 60) + " hr " + (minutes % 60) + " min" : minutes / 60 + " hr") : minutes + " min") : "Not set"; };
-  const pendingCount = appointments.filter((a) => a.deposit_status === "pending").length;
+  const pendingCount = appointments.filter((a) => a.deposit_status === "pending" && a.status !== "cancelled").length;
   const confirmedCount = appointments.filter((a) => a.status === "confirmed").length;
+  const cancelledCount = appointments.filter((a) => a.status === "cancelled").length;
+  const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const appointmentDay = (value: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
+  const todayCount = appointments.filter((a) => a.status !== "cancelled" && appointmentDay(a.starts_at) === todayKey).length;
+  const upcomingCount = appointments.filter((a) => a.status !== "cancelled" && new Date(a.starts_at).getTime() > Date.now()).length;
 
   return (
     <main className="min-h-screen bg-[#080706] px-4 py-8 text-[#faf8f3] sm:px-6">
@@ -123,10 +128,13 @@ export default function AdminPage() {
           </section>
         ) : (
           <>
-            <section className="mb-6 grid gap-3 sm:grid-cols-3">
+            <section aria-label="Appointment overview" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Total appointments</p><p className="mt-2 text-3xl font-semibold">{appointments.length}</p></div>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Today's appointments</p><p className="mt-2 text-3xl font-semibold">{todayCount}</p></div>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Upcoming appointments</p><p className="mt-2 text-3xl font-semibold">{upcomingCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Deposits awaiting verification</p><p className="mt-2 text-3xl font-semibold text-[#f5dc9d]">{pendingCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Confirmed appointments</p><p className="mt-2 text-3xl font-semibold">{confirmedCount}</p></div>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Cancelled appointments</p><p className="mt-2 text-3xl font-semibold">{cancelledCount}</p></div>
             </section>
 
             <section className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
