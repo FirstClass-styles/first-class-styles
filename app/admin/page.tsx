@@ -152,7 +152,8 @@ export default function AdminPage() {
                       >Message this customer on WhatsApp</a>}
                       {a.deposit_status === "pending" && <><button disabled={busy === a.id} onClick={() => void act(a.id, "verify_deposit")} className="rounded-lg bg-[#d7b56d] px-3 py-2 text-sm font-bold text-[#17110a] disabled:opacity-50">Verify $25 deposit & confirm</button><button disabled={busy === a.id} onClick={() => void act(a.id, "reject_deposit")} className="rounded-lg border border-amber-500/40 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark deposit not received</button></>}
                       {a.status !== "cancelled" && <button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button>}
-                      <button disabled={busy === a.id} onClick={() => void act(a.id, "delete")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Delete test record</button>
+                      {a.status === "cancelled" && !String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "mark_test")} className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark as test record</button>}
+                      {a.status === "cancelled" && String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "delete")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Delete test record</button>}
                     </div>
                   </article>)}
                 </div>
