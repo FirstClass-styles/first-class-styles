@@ -113,6 +113,8 @@ export async function POST(request: NextRequest) {
 
     const serviceDurations: Record<string, number> = {
       "Closure Sew-In": 270,
+      "Loc Journey": 150,
+      "Loc Refresh": 120,
       "Quick Weave": 150,
       "Signature Sew-In with Leave Out": 300,
       "Signature Shampoo & Blow Dry": 45,
@@ -159,7 +161,6 @@ export async function POST(request: NextRequest) {
         service,
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
-        duration_minutes: durationMinutes,
         status: "pending_payment",
         deposit_amount: 25,
         deposit_status: "pending",
