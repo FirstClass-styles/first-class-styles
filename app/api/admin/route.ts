@@ -195,7 +195,7 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id") || "";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return replyError("Invalid appointment reference.");
   try {
-    const query = new URLSearchParams({ id: "eq." + id, select: "id" });
+    const check = await database("appointments?id=eq." + encodeURIComponent(id) + "&select=id,status"); if (!check.ok) return replyError("The record could not be checked before deletion.", 503); const checked = await check.json(); if (!Array.isArray(checked) || checked.length === 0) return replyError("Appointment not found.", 404); if (checked[0].status !== "cancelled") return replyError("Only cancelled test appointments can be permanently deleted. Cancel the record first.", 409); const query = new URLSearchParams({ id: "eq." + id, status: "eq.cancelled", select: "id" });
     const response = await database("appointments?" + query.toString(), { method: "DELETE" });
     if (!response.ok) {
       console.error("Admin appointment delete failed:", response.status, await response.text());
