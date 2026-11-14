@@ -93,12 +93,13 @@ export async function PATCH(request: NextRequest) {
   if (body.action === "verify_deposit") update = { deposit_status: "verified", status: "confirmed" };
   else if (body.action === "reject_deposit") update = { deposit_status: "rejected", status: "cancelled" };
   else if (body.action === "cancel") update = { status: "cancelled" };
+  else if (body.action === "mark_test") update = { customer_notes: "[TEST RECORD]" };
   else return replyError("Choose a valid appointment action.");
 
   try {
     const lookup = new URLSearchParams({
       id: "eq." + body.id,
-      select: "id,customer_name,customer_email,service,starts_at,ends_at,status,deposit_status",
+      select: "id,customer_name,customer_email,service,starts_at,ends_at,status,deposit_status,customer_notes",
     });
     const beforeResponse = await database("appointments?" + lookup.toString());
     if (!beforeResponse.ok) {
@@ -108,6 +109,8 @@ export async function PATCH(request: NextRequest) {
     const beforeRows = await beforeResponse.json();
     if (!Array.isArray(beforeRows) || beforeRows.length === 0) return replyError("Appointment not found.", 404);
     const previous = beforeRows[0];
+    if (body.action === "mark_test" && previous.status !== "cancelled") return replyError("Cancel the appointment before marking it as a test record.", 409);
+    if (body.action === "mark_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
 
     const query = new URLSearchParams({ id: "eq." + body.id, select: "id,status,deposit_status" });
     const response = await database("appointments?" + query.toString(), {
@@ -195,7 +198,7 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id") || "";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return replyError("Invalid appointment reference.");
   try {
-    const check = await database("appointments?id=eq." + encodeURIComponent(id) + "&select=id,status"); if (!check.ok) return replyError("The record could not be checked before deletion.", 503); const checked = await check.json(); if (!Array.isArray(checked) || checked.length === 0) return replyError("Appointment not found.", 404); if (checked[0].status !== "cancelled") return replyError("Only cancelled test appointments can be permanently deleted. Cancel the record first.", 409); const query = new URLSearchParams({ id: "eq." + id, status: "eq.cancelled", select: "id" });
+    const check = await database("appointments?id=eq." + encodeURIComponent(id) + "&select=id,status,customer_notes"); if (!check.ok) return replyError("The record could not be checked before deletion.", 503); const checked = await check.json(); if (!Array.isArray(checked) || checked.length === 0) return replyError("Appointment not found.", 404); if (checked[0].status !== "cancelled" || !String(checked[0].customer_notes || "").startsWith("[TEST RECORD]")) return replyError("Only cancelled records explicitly marked as test records can be permanently deleted.", 409); const query = new URLSearchParams({ id: "eq." + id, status: "eq.cancelled", select: "id" });
     const response = await database("appointments?" + query.toString(), { method: "DELETE" });
     if (!response.ok) {
       console.error("Admin appointment delete failed:", response.status, await response.text());
