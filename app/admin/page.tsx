@@ -86,7 +86,7 @@ export default function AdminPage() {
   }
 
   const filtered = useMemo(() => appointments.filter((a) => {
-    const matchesFilter = filter === "pending" ? a.deposit_status === "pending"
+    const matchesFilter = filter === "pending" ? a.deposit_status === "pending" && a.status !== "cancelled"
       : filter === "confirmed" ? a.status === "confirmed"
       : filter === "cancelled" ? a.status === "cancelled" : true;
     const term = search.trim().toLowerCase();
@@ -153,11 +153,13 @@ export default function AdminPage() {
                     {a.customer_notes && <p className="mt-3 rounded-lg bg-white/5 p-3 text-sm text-[#aaa49a]"><span className="font-semibold text-[#ddd6ca]">Customer notes:</span> {a.customer_notes}</p>}
                     <div className="mt-4 flex flex-wrap gap-2">
                       {a.customer_phone.replace(/\D/g, "").length >= 10 && <a
-                        href={"https://wa.me/" + a.customer_phone.replace(/\D/g, "") + "?text=" + encodeURIComponent("Hello " + a.customer_name + ", this is First Class Styles. I am contacting you about your " + a.service + " appointment on " + dateTime(a.starts_at) + ". Current appointment status: " + a.status.replaceAll("_", " ") + ". Deposit status: " + a.deposit_status + ". Please reply if you have any questions.")}
+                        href={"https://wa.me/" + a.customer_phone.replace(/\D/g, "") + "?text=" + encodeURIComponent(a.status === "confirmed" && a.deposit_status === "verified"
+                          ? "Hello " + a.customer_name + ", this is First Class Styles with a friendly reminder of your confirmed " + a.service + " appointment on " + dateTime(a.starts_at) + ". Your $25 deposit has been received. Please remember the remaining balance is due in cash at your appointment. Reply here if you need assistance."
+                          : "Hello " + a.customer_name + ", this is First Class Styles. I am contacting you about your " + a.service + " appointment on " + dateTime(a.starts_at) + ". Current appointment status: " + a.status.replaceAll("_", " ") + ". Deposit status: " + a.deposit_status + ". Please reply if you have any questions.")}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
-                      >Message this customer on WhatsApp</a>}
+                      >{a.status === "confirmed" && a.deposit_status === "verified" ? "Prepare WhatsApp appointment reminder" : "Message this customer on WhatsApp"}</a>}
                       {a.deposit_status === "pending" && <><button disabled={busy === a.id} onClick={() => void act(a.id, "verify_deposit")} className="rounded-lg bg-[#d7b56d] px-3 py-2 text-sm font-bold text-[#17110a] disabled:opacity-50">Verify $25 deposit & confirm</button><button disabled={busy === a.id} onClick={() => void act(a.id, "reject_deposit")} className="rounded-lg border border-amber-500/40 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark deposit not received</button></>}
                       {a.status !== "cancelled" && <button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button>}
                       {a.status === "cancelled" && !String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "mark_test")} className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark as test record</button>}
