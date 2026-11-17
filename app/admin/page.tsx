@@ -105,6 +105,21 @@ export default function AdminPage() {
   const appointmentDay = (value: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
   const todayCount = appointments.filter((a) => a.status !== "cancelled" && appointmentDay(a.starts_at) === todayKey).length;
   const upcomingCount = appointments.filter((a) => a.status !== "cancelled" && new Date(a.starts_at).getTime() > Date.now()).length;
+  const activeAppointments = appointments.filter((a) => a.status !== "cancelled");
+  const uniqueClients = new Set(activeAppointments.map((a) => a.customer_phone.replace(/\\D/g, ""))).size;
+  const repeatClients = Array.from(activeAppointments.reduce((map, a) => {
+    const key = a.customer_phone.replace(/\\D/g, "");
+    map.set(key, (map.get(key) || 0) + 1);
+    return map;
+  }, new Map<string, number>()).values()).filter((count) => count > 1).length;
+  const pendingDepositTotal = appointments.filter((a) => a.status !== "cancelled" && a.deposit_status === "pending")
+    .reduce((sum, a) => sum + (Number(a.deposit_amount) || 0), 0);
+  const serviceCounts = activeAppointments.reduce((map, a) => {
+    map.set(a.service, (map.get(a.service) || 0) + 1);
+    return map;
+  }, new Map<string, number>());
+  const popularServices = Array.from(serviceCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
 
   return (
     <main className="min-h-screen bg-[#080706] px-4 py-8 text-[#faf8f3] sm:px-6">
@@ -138,6 +153,13 @@ export default function AdminPage() {
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Cancelled appointments</p><p className="mt-2 text-3xl font-semibold">{cancelledCount}</p></div>
             </section>
 
+
+            <section aria-label="Client and booking insights" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Active clients</p><p className="mt-2 text-2xl font-semibold">{uniqueClients}</p><p className="mt-1 text-xs text-[#aaa49a]">Based on distinct phone numbers</p></div>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Repeat clients</p><p className="mt-2 text-2xl font-semibold">{repeatClients}</p><p className="mt-1 text-xs text-[#aaa49a]">Clients with multiple active bookings in the records</p></div>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Deposits still due</p><p className="mt-2 text-2xl font-semibold text-[#f5dc9d]">{money(pendingDepositTotal)}</p><p className="mt-1 text-xs text-[#aaa49a]">Not collected revenue; awaiting verification</p></div>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Most booked services</p><div className="mt-2 space-y-1">{popularServices.length ? popularServices.map(([name,count]) => <p key={name} className="flex justify-between gap-2 text-sm"><span className="truncate">{name}</span><strong>{count}</strong></p>) : <p className="text-sm text-[#aaa49a]">No booking data yet</p>}</div></div>
+            </section>
             <AdminCalendar appointments={appointments} />
 
             <section className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
