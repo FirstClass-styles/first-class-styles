@@ -119,6 +119,15 @@ export default function AdminPage() {
     return map;
   }, new Map<string, number>());
   const popularServices = Array.from(serviceCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const clientDirectory = Array.from(activeAppointments.reduce((map, appointment) => {
+    const key = appointment.customer_phone.replace(/\\D/g, "");
+    const current = map.get(key) || { phone: appointment.customer_phone, name: appointment.customer_name, email: appointment.customer_email, visits: 0, latest: appointment.starts_at, services: new Set<string>() };
+    current.visits += 1; current.services.add(appointment.service);
+    if (new Date(appointment.starts_at).getTime() > new Date(current.latest).getTime()) { current.latest = appointment.starts_at; current.name = appointment.customer_name; current.email = appointment.customer_email; }
+    map.set(key, current); return map;
+  }, new Map<string, { phone: string; name: string; email: string | null; visits: number; latest: string; services: Set<string> }>()).values())
+    .sort((a, b) => new Date(b.latest).getTime() - new Date(a.latest).getTime());
+
 
 
   return (
@@ -159,6 +168,16 @@ export default function AdminPage() {
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Repeat clients</p><p className="mt-2 text-2xl font-semibold">{repeatClients}</p><p className="mt-1 text-xs text-[#aaa49a]">Clients with multiple active bookings in the records</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Deposits still due</p><p className="mt-2 text-2xl font-semibold text-[#f5dc9d]">{money(pendingDepositTotal)}</p><p className="mt-1 text-xs text-[#aaa49a]">Not collected revenue; awaiting verification</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Most booked services</p><div className="mt-2 space-y-1">{popularServices.length ? popularServices.map(([name,count]) => <p key={name} className="flex justify-between gap-2 text-sm"><span className="truncate">{name}</span><strong>{count}</strong></p>) : <p className="text-sm text-[#aaa49a]">No booking data yet</p>}</div></div>
+            </section>
+
+            <section aria-label="Client directory" className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
+              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the latest 200 appointment records currently loaded.</p></div>
+              <div className="space-y-3">
+                {clientDirectory.length ? clientDirectory.map((client) => <article key={client.phone.replace(/\\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{client.name}</h3><p className="text-xs text-[#aaa49a]">{client.visits} active appointment{client.visits === 1 ? "" : "s"} in records</p></div><span className="text-xs text-[#d7b56d]">Last booking: {dateTime(client.latest)}</span></div>
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm"><a className="text-[#f5dc9d] underline" href={"tel:" + client.phone}>{client.phone}</a>{client.email && <a className="text-[#f5dc9d] underline" href={"mailto:" + client.email}>{client.email}</a>}<span className="text-[#aaa49a]">Services: {Array.from(client.services).join(", ")}</span></div>
+                </article>) : <p className="py-5 text-center text-sm text-[#aaa49a]">Client records will appear after bookings are received.</p>}
+              </div>
             </section>
             <AdminCalendar appointments={appointments} />
 
