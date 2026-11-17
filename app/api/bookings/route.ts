@@ -139,6 +139,18 @@ export async function POST(request: NextRequest) {
       return jsonError("The salon is open Saturday through Tuesday only.");
     }
 
+    // Check owner-managed closure dates on the server before accepting a booking.
+    const closureQuery = new URLSearchParams({ select: "id", closed_date: "eq." + date, limit: "1" });
+    const closureResponse = await supabaseRequest("salon_closed_dates?" + closureQuery.toString());
+    if (!closureResponse.ok) {
+      console.error("Closure date check failed:", closureResponse.status, await closureResponse.text());
+      return jsonError("Online booking is temporarily unavailable while the salon calendar is updated. Please contact the salon directly.", 503);
+    }
+    const closureRows = await closureResponse.json();
+    if (Array.isArray(closureRows) && closureRows.length > 0) {
+      return jsonError("The salon is closed on that date. Please choose another available date.", 409);
+    }
+
     const startsAt = localDateTimeToUtc(date, time);
     const endsAt = new Date(startsAt.getTime() + durationMinutes * 60 * 1000);
     if (startsAt.getTime() < Date.now() + 24 * 60 * 60 * 1000) {
