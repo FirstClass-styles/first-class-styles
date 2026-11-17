@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   if (!validAdminSession(request)) return error("Your admin session has expired. Please sign in again.", 401);
   let body: { date?: string; reason?: string };
   try { body = await request.json(); } catch { return error("Invalid request."); }
-  if (typeof body.date !== "string" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(body.date)) return error("Choose a valid date.");
+  if (typeof body.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(body.date)) return error("Choose a valid date.");
   const parsed = new Date(body.date + "T12:00:00Z");
   if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== body.date) return error("Choose a valid date.");
   const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 120) : "";
