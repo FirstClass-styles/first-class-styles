@@ -151,8 +151,8 @@ export async function PATCH(request: NextRequest) {
         message = [
           "Hello " + previous.customer_name + ",",
           "",
-          "We could not verify the $25 deposit for your requested appointment.",
-          "Your appointment is not confirmed. Please contact First Class Styles on WhatsApp at +1 (240) 370-1128 to discuss the next step.",
+          "We could not verify the $25 deposit, so the appointment has been cancelled and the time released for other clients.",
+          "Please contact First Class Styles on WhatsApp at +1 (240) 370-1128 if you have already sent payment or need assistance.",
           "",
           "Requested appointment: " + appointmentTime,
           "Service: " + previous.service,
