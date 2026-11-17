@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
         service,
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
-        status: "pending_payment",
+        status: "confirmed",
         deposit_amount: 25,
         deposit_status: "pending",
         customer_notes: notes || null,
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
 
     const appointmentTime = bookingDateTime(startsAt.toISOString());
     const salonMessage = [
-      "A new booking request has been submitted.",
+      "A new appointment has been automatically confirmed.",
       "",
       "Customer: " + name,
       "Phone: " + phone,
@@ -191,7 +191,8 @@ export async function POST(request: NextRequest) {
       "Service: " + service,
       "Requested appointment: " + appointmentTime,
       "Duration: " + (durationMinutes >= 60 ? (durationMinutes % 60 ? Math.floor(durationMinutes / 60) + " hours " + (durationMinutes % 60) + " minutes" : durationMinutes / 60 + " hours") : durationMinutes + " minutes"),
-      "Deposit: $25 — pending verification",
+      "Appointment status: CONFIRMED immediately on booking",
+      "Deposit: $25 — still due; payment has not been recorded",
       notes ? "Customer notes: " + notes : "",
       "",
       "Review this request in the salon admin dashboard: https://first-class-styles.vercel.app/admin",
@@ -200,14 +201,14 @@ export async function POST(request: NextRequest) {
     const customerMessage = [
       "Hello " + name + ",",
       "",
-      "We received your appointment request at First Class Styles – Salon & Hair Spa.",
+      "Your appointment at First Class Styles – Salon & Hair Spa is CONFIRMED.",
       "",
       "Service: " + service,
       "Requested appointment: " + appointmentTime,
       "Duration: " + (durationMinutes >= 60 ? (durationMinutes % 60 ? Math.floor(durationMinutes / 60) + " hours " + (durationMinutes % 60) + " minutes" : durationMinutes / 60 + " hours") : durationMinutes + " minutes"),
-      "Deposit: $25 non-refundable — pending salon verification",
+      "Deposit: $25 non-refundable — still due; payment has not been recorded",
       "",
-      "Your appointment is not confirmed yet. The salon will verify your deposit and send you an update. For payment details, contact us on WhatsApp at +1 (240) 370-1128.",
+      "Your appointment is confirmed and your time is reserved. The $25 non-refundable deposit is still due. Please contact us on WhatsApp at +1 (240) 370-1128 for the current payment instructions. Your remaining balance is paid in cash at the salon.",
       "",
       "First Class Styles",
       "+1 (240) 370-1128",
@@ -224,11 +225,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Your appointment request has been saved. The $25 deposit is pending verification by the salon.",
+      message: "Your appointment is confirmed and your time is reserved. The $25 deposit is still due and has not been recorded as paid.",
       appointment: {
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
-        status: "pending_payment",
+        status: "confirmed",
         deposit_amount: 25,
       },
       email_notifications: emailResults.every((result) => result.status === "fulfilled") ? "sent" : "not_confirmed",
