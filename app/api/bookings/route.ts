@@ -227,8 +227,8 @@ export async function POST(request: NextRequest) {
     ].join("\n");
 
     const emailTasks = [
-      sendEmail("firstclass.styles1@gmail.com", "New salon booking request — " + name, salonMessage),
-      ...(email ? [sendEmail(email, "We received your booking request — First Class Styles", customerMessage)] : []),
+      sendEmail("firstclass.styles1@gmail.com", "New confirmed salon appointment — " + name, salonMessage),
+      ...(email ? [sendEmail(email, "Your appointment is confirmed — First Class Styles", customerMessage)] : []),
     ];
     const emailResults = await Promise.allSettled(emailTasks);
     emailResults.forEach((result) => {
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
         status: "confirmed",
         deposit_amount: 25,
       },
-      email_notifications: emailResults.every((result) => result.status === "fulfilled") ? "sent" : "not_confirmed",
+      email_notifications: emailResults.every((result) => result.status === "fulfilled") ? "sent" : "partial_failure",
     }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Booking submission error:", error);
