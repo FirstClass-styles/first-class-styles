@@ -171,9 +171,9 @@ export default function AdminPage() {
             </section>
 
             <section aria-label="Client directory" className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the latest 200 appointment records currently loaded.</p></div>
+              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Search using the field below. Profiles are grouped by phone number and based on the latest 200 appointment records.</p><input type="search" aria-label="Search client directory" placeholder="Find a client by name, phone, email or service…" value={search} onChange={(e) => setSearch(e.target.value)} className="mt-3 w-full rounded-xl border border-[#d7b56d]/30 bg-[#080706] px-4 py-3 text-sm text-[#faf8f3] placeholder:text-[#777168]" /></div>
               <div className="space-y-3">
-                {clientDirectory.length ? clientDirectory.map((client) => <article key={client.phone.replace(/\\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
+                {visibleClients.length ? visibleClients.map((client) => <article key={client.phone.replace(/\\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{client.name}</h3><p className="text-xs text-[#aaa49a]">{client.visits} active appointment{client.visits === 1 ? "" : "s"} in records</p></div><span className="text-xs text-[#d7b56d]">Last booking: {dateTime(client.latest)}</span></div>
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm"><a className="text-[#f5dc9d] underline" href={"tel:" + client.phone}>{client.phone}</a>{client.email && <a className="text-[#f5dc9d] underline" href={"mailto:" + client.email}>{client.email}</a>}<span className="text-[#aaa49a]">Services: {Array.from(client.services).join(", ")}</span></div>
                 </article>) : <p className="py-5 text-center text-sm text-[#aaa49a]">Client records will appear after bookings are received.</p>}
@@ -219,4 +219,4 @@ export default function AdminPage() {
       </div>
     </main>
   );
-}
+}\n  const visibleClients = clientDirectory.filter((client) => !search.trim() || [client.name, client.phone, client.email || "", Array.from(client.services).join(" ")].some((value) => value.toLowerCase().includes(search.trim().toLowerCase())));
