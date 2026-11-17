@@ -336,6 +336,7 @@ function localDateTimeToUtc(dateText,timeText){
 }
 function dateKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function sameDay(a,b){return a&&b&&a.toDateString()===b.toDateString()}
+let closedDates=new Set(),closureCalendarReady=false;
 function isSalonDay(d){return [0,1,2,6].includes(d.getDay())}
 function isAtLeast24Hours(dateText,timeText){return localDateTimeToUtc(dateText,timeText).getTime()>=Date.now()+24*60*60*1000}
 function appointmentDateKey(iso){const p=nyParts(new Date(iso));return p.year+"-"+p.month+"-"+p.day}
@@ -374,8 +375,13 @@ function refreshTimes(){
  }
 }
 async function loadAvailability(){
- try{const response=await fetch("/api/bookings",{cache:"no-store"});if(!response.ok)throw new Error("Availability unavailable");const data=await response.json();liveAppointments=data.appointments||[];}
- catch(error){liveAppointments=[];toast("Live availability could not load. Please refresh before booking.");}
+ try{
+  const results=await Promise.all([fetch("/api/bookings",{cache:"no-store"}),fetch("/api/closures",{cache:"no-store"})]);
+  if(!results[0].ok)throw new Error("Availability unavailable");
+  if(!results[1].ok)throw new Error("Closed dates unavailable");
+  const data=await results[0].json(),closed=await results[1].json();
+  liveAppointments=data.appointments||[];closedDates=new Set(closed.dates||[]);closureCalendarReady=true;
+ }catch(error){liveAppointments=[];closureCalendarReady=false;toast("The booking calendar could not load all availability information. Please refresh or contact the salon.");}
  refreshTimes();renderCalendar();
 }
 function renderCalendar(){
@@ -384,7 +390,7 @@ function renderCalendar(){
  for(let i=0;i<42;i++){
   const n=i-start+1,d=new Date(y,m,n),cell=document.createElement("button");cell.className="day";cell.type="button";cell.textContent=d.getDate();
   if(n<1||n>last.getDate()){cell.classList.add("muted");cell.disabled=true;}
-  else if(d<today||!isSalonDay(d)){cell.classList.add("disabled");cell.disabled=true;cell.title="Salon closed or date has passed";}
+  else if(d<today||!isSalonDay(d)||closedDates.has(dateKey(d))||!closureCalendarReady){cell.classList.add("disabled");cell.disabled=true;cell.title=closedDates.has(dateKey(d))?"Salon closed on this date":!closureCalendarReady?"Calendar availability is loading or unavailable":"Salon closed or date has passed";}
   else{
    if(sameDay(d,selectedDate))cell.classList.add("selected");
    cell.addEventListener("click",()=>{selectedDate=d;selectedEl.textContent="Selected: "+d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});refreshTimes();renderCalendar();});
