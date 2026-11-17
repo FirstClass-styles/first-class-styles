@@ -214,7 +214,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
         <h3>Your appointment is confirmed!</h3>
         <p id="confirmationSummary"></p>
         <p class="confirmation-status">Appointment confirmed. Your $25 non-refundable deposit is still due and has not been marked as paid.</p>
-        <p>Your appointment time is reserved. Contact the salon on WhatsApp for current deposit instructions. The remaining balance is paid in cash at the salon.</p>
+        <p>Your appointment time is reserved. Pay the $25 non-refundable deposit using Cash App <a href="https://cash.app/$hotgyal128" target="_blank" rel="noopener noreferrer">$hotgyal128</a>, or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Please send payment confirmation to the salon on WhatsApp. The remaining balance is paid in cash at the salon.</p>
         <div class="confirmation-actions"><a class="btn" id="confirmationWhatsApp" href="https://wa.me/12403701128" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a><a class="btn secondary" href="#contact">Salon Contact Details</a></div>
         <p class="confirmation-ref" id="confirmationReference"></p>
       </div>
@@ -238,7 +238,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
     <details class="faq-item"><summary>How far ahead should I book?</summary><p>Please submit your appointment request at least 24 hours before your preferred start time. Available dates and times are shown in the booking calendar.</p></details>
     <details class="faq-item"><summary>How long is an appointment?</summary><p>Appointment length depends on the selected service. Choose your service to see start times that fit within salon hours.</p></details>
     <details class="faq-item"><summary>Is a deposit required?</summary><p>Yes. A $25 non-refundable deposit is required. Your appointment is confirmed when your booking is successfully submitted. The deposit remains due until the salon verifies payment.</p></details>
-    <details class="faq-item"><summary>How do I pay the deposit?</summary><p>Please contact the salon through WhatsApp for the current deposit instructions before sending payment. The remaining balance is paid in cash at the salon.</p></details>
+    <details class="faq-item"><summary>How do I pay the deposit?</summary><p>Pay the $25 non-refundable deposit using Cash App <a href="https://cash.app/$hotgyal128" target="_blank" rel="noopener noreferrer">$hotgyal128</a>, or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Send payment confirmation to the salon on WhatsApp. The remaining balance is paid in cash at the salon.</p></details>
     <details class="faq-item"><summary>What services are available?</summary><p>Closure Sew-In, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact the salon for service pricing.</p></details>
     <details class="faq-item"><summary>Where is First Class Styles?</summary><p>3813 Old Silver Hill Rd, Suitland, MD 20746.</p></details>
     <details class="faq-item"><summary>How do I contact the salon?</summary><p>Call or WhatsApp +1 (240) 370-1128, or email firstclass.styles1@gmail.com.</p></details>
@@ -427,9 +427,9 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   const prettyDate=new Date(d.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   const prettyTime=new Date("2000-01-01T"+d.time+":00").toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
   summary.textContent=d.service+" · "+prettyDate+" at "+prettyTime+" · "+durationLabel(selectedDuration());
-  const message="Hello First Class Styles! I submitted a booking request and would like the official $25 deposit instructions.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nRequested date: "+prettyDate+"\nRequested time: "+prettyTime+"\nPlease confirm the payment details. I understand my appointment is confirmed and the $25 deposit remains due until verified.";
+  const message="Hello First Class Styles! My appointment is confirmed and I am sending my $25 deposit payment confirmation.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nAppointment date: "+prettyDate+"\nAppointment time: "+prettyTime+"\nPayment method: ";
   whatsapp.href="https://wa.me/"+BUSINESS_WHATSAPP+"?text="+encodeURIComponent(message);
-  reference.textContent="Request received. Check your email if you provided one; the salon will send an update after reviewing your deposit.";
+  reference.textContent="Appointment confirmed. Your $25 deposit is still due until the salon verifies payment. Use the payment details above and send your payment confirmation by WhatsApp.";
   confirmation.classList.add("show");
   confirmation.scrollIntoView({behavior:"smooth",block:"center"});
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
@@ -459,7 +459,7 @@ document.getElementById("year").textContent=new Date().getFullYear();
  const answers=[
   {keys:["hour","open","close","day"],text:"We are open Saturday through Tuesday, 9 AM–4 PM. We are closed Wednesday through Friday."},
   {keys:["book","appointment","reserve","schedule","calendar"],text:"Use the booking planner on this website. Choose an available Saturday, Sunday, Monday, or Tuesday and a start time. Bookings must be made at least 24 hours ahead. Your appointment is confirmed when successfully submitted; the $25 deposit remains due until verified."},
-  {keys:["deposit","pay","payment","zelle","cash app","apple pay","cash"],text:"A $25 non-refundable deposit is required. Please WhatsApp the salon at +1 (240) 370-1128 for current deposit instructions before sending payment. The remaining balance is paid in cash at the salon."},
+  {keys:["deposit","pay","payment","zelle","cash app","apple pay","cash"],text:"A $25 non-refundable deposit is required. Pay by Cash App at $hotgyal128 or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Send payment confirmation by WhatsApp. The remaining balance is paid in cash at the salon."},
   {keys:["service","style","weave","sew","silk","shampoo","blow"],text:"Our services are Closure Sew-In, Loc Journey, Loc Refresh, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact us for current pricing."},
   {keys:["address","location","where","map","directions"],text:"Find us at 3813 Old Silver Hill Rd, Suitland, MD 20746. Use the map in the Contact section for directions."},
   {keys:["phone","call","whatsapp","email","contact"],text:"Call or WhatsApp +1 (240) 370-1128, or email firstclass.styles1@gmail.com."},
