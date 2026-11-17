@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AdminCalendar from "@/components/admin-calendar";
 
 type Appointment = {
   id: string;
@@ -136,6 +137,8 @@ export default function AdminPage() {
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Confirmed appointments</p><p className="mt-2 text-3xl font-semibold">{confirmedCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Cancelled appointments</p><p className="mt-2 text-3xl font-semibold">{cancelledCount}</p></div>
             </section>
+
+            <AdminCalendar appointments={appointments} />
 
             <section className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
               <div className="mb-5 space-y-3">
