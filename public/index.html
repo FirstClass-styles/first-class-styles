@@ -225,7 +225,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
         <div class="form-grid"><div class="field"><label for="time">Available start time</label><select id="time" name="time" required disabled><option value="">Choose a date first</option><option value="09:00">9:00 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="12:00">12:00 PM</option></select><p id="timeAvailabilityMessage" class="availability-message" role="status" aria-live="polite" hidden></p></div></div>
         <div class="field"><label for="notes">Notes / hair goals</label><textarea id="notes" name="notes" placeholder="Tell us anything helpful before your appointment."></textarea></div>
         <div class="booking-actions"><button class="btn" type="submit">Submit Booking Request →</button><button class="btn secondary" type="button" id="whatsappBtn">Ask via WhatsApp</button></div>
-        <p class="notice">A $25 non-refundable deposit is required. Your request is saved as pending until the salon verifies the deposit. Remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner.</p>
+        <p class="notice">A $25 non-refundable deposit is required. Your appointment is confirmed when the booking is successfully submitted; the deposit remains due until the salon verifies payment. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner.</p>
       </form>
     </div>
   </div>
@@ -237,7 +237,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
     <details class="faq-item"><summary>What days is the salon open?</summary><p>First Class Styles is open Saturday through Tuesday, 9 AM–4 PM. The salon is closed Wednesday through Friday.</p></details>
     <details class="faq-item"><summary>How far ahead should I book?</summary><p>Please submit your appointment request at least 24 hours before your preferred start time. Available dates and times are shown in the booking calendar.</p></details>
     <details class="faq-item"><summary>How long is an appointment?</summary><p>Appointment length depends on the selected service. Choose your service to see start times that fit within salon hours.</p></details>
-    <details class="faq-item"><summary>Is a deposit required?</summary><p>Yes. A $25 non-refundable deposit is required. Your request remains pending until the salon verifies the deposit and confirms your appointment.</p></details>
+    <details class="faq-item"><summary>Is a deposit required?</summary><p>Yes. A $25 non-refundable deposit is required. Your appointment is confirmed when your booking is successfully submitted. The deposit remains due until the salon verifies payment.</p></details>
     <details class="faq-item"><summary>How do I pay the deposit?</summary><p>Please contact the salon through WhatsApp for the current deposit instructions before sending payment. The remaining balance is paid in cash at the salon.</p></details>
     <details class="faq-item"><summary>What services are available?</summary><p>Closure Sew-In, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact the salon for service pricing.</p></details>
     <details class="faq-item"><summary>Where is First Class Styles?</summary><p>3813 Old Silver Hill Rd, Suitland, MD 20746.</p></details>
@@ -427,7 +427,7 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   const prettyDate=new Date(d.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   const prettyTime=new Date("2000-01-01T"+d.time+":00").toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
   summary.textContent=d.service+" · "+prettyDate+" at "+prettyTime+" · "+durationLabel(selectedDuration());
-  const message="Hello First Class Styles! I submitted a booking request and would like the official $25 deposit instructions.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nRequested date: "+prettyDate+"\nRequested time: "+prettyTime+"\nPlease confirm the payment details. I understand my appointment is not confirmed until the deposit is verified.";
+  const message="Hello First Class Styles! I submitted a booking request and would like the official $25 deposit instructions.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nRequested date: "+prettyDate+"\nRequested time: "+prettyTime+"\nPlease confirm the payment details. I understand my appointment is confirmed and the $25 deposit remains due until verified.";
   whatsapp.href="https://wa.me/"+BUSINESS_WHATSAPP+"?text="+encodeURIComponent(message);
   reference.textContent="Request received. Check your email if you provided one; the salon will send an update after reviewing your deposit.";
   confirmation.classList.add("show");
@@ -458,7 +458,7 @@ document.getElementById("year").textContent=new Date().getFullYear();
  if(!launch||!panel||!close||!log||!form||!input)return;
  const answers=[
   {keys:["hour","open","close","day"],text:"We are open Saturday through Tuesday, 9 AM–4 PM. We are closed Wednesday through Friday."},
-  {keys:["book","appointment","reserve","schedule","calendar"],text:"Use the booking planner on this website. Choose an available Saturday, Sunday, Monday, or Tuesday and a start time. Requests must be made at least 24 hours ahead. Your request is pending until the $25 deposit is verified by the salon."},
+  {keys:["book","appointment","reserve","schedule","calendar"],text:"Use the booking planner on this website. Choose an available Saturday, Sunday, Monday, or Tuesday and a start time. Bookings must be made at least 24 hours ahead. Your appointment is confirmed when successfully submitted; the $25 deposit remains due until verified."},
   {keys:["deposit","pay","payment","zelle","cash app","apple pay","cash"],text:"A $25 non-refundable deposit is required. Please WhatsApp the salon at +1 (240) 370-1128 for current deposit instructions before sending payment. The remaining balance is paid in cash at the salon."},
   {keys:["service","style","weave","sew","silk","shampoo","blow"],text:"Our services are Closure Sew-In, Loc Journey, Loc Refresh, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact us for current pricing."},
   {keys:["address","location","where","map","directions"],text:"Find us at 3813 Old Silver Hill Rd, Suitland, MD 20746. Use the map in the Contact section for directions."},
