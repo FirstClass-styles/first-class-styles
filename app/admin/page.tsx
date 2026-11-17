@@ -106,9 +106,9 @@ export default function AdminPage() {
   const todayCount = appointments.filter((a) => a.status !== "cancelled" && appointmentDay(a.starts_at) === todayKey).length;
   const upcomingCount = appointments.filter((a) => a.status !== "cancelled" && new Date(a.starts_at).getTime() > Date.now()).length;
   const activeAppointments = appointments.filter((a) => a.status !== "cancelled");
-  const uniqueClients = new Set(activeAppointments.map((a) => a.customer_phone.replace(/\\D/g, ""))).size;
+  const uniqueClients = new Set(activeAppointments.map((a) => a.customer_phone.replace(/\D/g, ""))).size;
   const repeatClients = Array.from(activeAppointments.reduce((map, a) => {
-    const key = a.customer_phone.replace(/\\D/g, "");
+    const key = a.customer_phone.replace(/\D/g, "");
     map.set(key, (map.get(key) || 0) + 1);
     return map;
   }, new Map<string, number>()).values()).filter((count) => count > 1).length;
@@ -120,7 +120,7 @@ export default function AdminPage() {
   }, new Map<string, number>());
   const popularServices = Array.from(serviceCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const clientDirectory = Array.from(activeAppointments.reduce((map, appointment) => {
-    const key = appointment.customer_phone.replace(/\\D/g, "");
+    const key = appointment.customer_phone.replace(/\D/g, "");
     const current = map.get(key) || { phone: appointment.customer_phone, name: appointment.customer_name, email: appointment.customer_email, visits: 0, latest: appointment.starts_at, services: new Set<string>() };
     current.visits += 1; current.services.add(appointment.service);
     if (new Date(appointment.starts_at).getTime() > new Date(current.latest).getTime()) { current.latest = appointment.starts_at; current.name = appointment.customer_name; current.email = appointment.customer_email; }
@@ -173,7 +173,7 @@ export default function AdminPage() {
             <section aria-label="Client directory" className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
               <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the latest 200 appointment records currently loaded.</p></div>
               <div className="space-y-3">
-                {clientDirectory.length ? clientDirectory.map((client) => <article key={client.phone.replace(/\\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
+                {clientDirectory.length ? clientDirectory.map((client) => <article key={client.phone.replace(/\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{client.name}</h3><p className="text-xs text-[#aaa49a]">{client.visits} active appointment{client.visits === 1 ? "" : "s"} in records</p></div><span className="text-xs text-[#d7b56d]">Last booking: {dateTime(client.latest)}</span></div>
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm"><a className="text-[#f5dc9d] underline" href={"tel:" + client.phone}>{client.phone}</a>{client.email && <a className="text-[#f5dc9d] underline" href={"mailto:" + client.email}>{client.email}</a>}<span className="text-[#aaa49a]">Services: {Array.from(client.services).join(", ")}</span></div>
                 </article>) : <p className="py-5 text-center text-sm text-[#aaa49a]">Client records will appear after bookings are received.</p>}
