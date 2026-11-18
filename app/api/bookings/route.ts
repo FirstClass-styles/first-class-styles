@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
         service,
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
-        status: "confirmed",
+        status: "pending_payment",
         deposit_amount: 25,
         deposit_status: "pending",
         customer_notes: notes || null,
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
 
     const appointmentTime = bookingDateTime(startsAt.toISOString());
     const salonMessage = [
-      "A new appointment has been automatically confirmed.",
+      "A new appointment request has been received and is awaiting deposit verification.",
       "",
       "Customer: " + name,
       "Phone: " + phone,
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       "Service: " + service,
       "Requested appointment: " + appointmentTime,
       "Duration: " + (durationMinutes >= 60 ? (durationMinutes % 60 ? Math.floor(durationMinutes / 60) + " hours " + (durationMinutes % 60) + " minutes" : durationMinutes / 60 + " hours") : durationMinutes + " minutes"),
-      "Appointment status: CONFIRMED immediately on booking",
+      "Appointment status: PENDING DEPOSIT VERIFICATION — time is temporarily reserved",
       "Deposit: $25 — still due; payment has not been recorded",
       notes ? "Customer notes: " + notes : "",
       "",
@@ -213,22 +213,22 @@ export async function POST(request: NextRequest) {
     const customerMessage = [
       "Hello " + name + ",",
       "",
-      "Your appointment at First Class Styles – Salon & Hair Spa is CONFIRMED.",
+      "We have received your appointment request at First Class Styles – Salon & Hair Spa.",
       "",
       "Service: " + service,
       "Requested appointment: " + appointmentTime,
       "Duration: " + (durationMinutes >= 60 ? (durationMinutes % 60 ? Math.floor(durationMinutes / 60) + " hours " + (durationMinutes % 60) + " minutes" : durationMinutes / 60 + " hours") : durationMinutes + " minutes"),
       "Deposit: $25 non-refundable — still due; payment has not been recorded",
       "",
-      "Your appointment is confirmed and your time is reserved. The $25 non-refundable deposit is still due. Please contact us on WhatsApp at +1 (240) 370-1128 for the current payment instructions. Your remaining balance is paid in cash at the salon.",
+      "Your requested time is temporarily reserved while we verify your $25 non-refundable deposit. Please contact us on WhatsApp at +1 (240) 370-1128 for the current payment instructions. Your appointment will be confirmed once the deposit is verified. The remaining balance is paid in cash at the salon.",
       "",
       "First Class Styles",
       "+1 (240) 370-1128",
     ].join("\n");
 
     const emailTasks = [
-      sendEmail("firstclass.styles1@gmail.com", "New confirmed salon appointment — " + name, salonMessage),
-      ...(email ? [sendEmail(email, "Your appointment is confirmed — First Class Styles", customerMessage)] : []),
+      sendEmail("firstclass.styles1@gmail.com", "New booking request awaiting deposit — " + name, salonMessage),
+      ...(email ? [sendEmail(email, "We received your booking request — First Class Styles", customerMessage)] : []),
     ];
     const emailResults = await Promise.allSettled(emailTasks);
     emailResults.forEach((result) => {
@@ -237,11 +237,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Your appointment is confirmed and your time is reserved. The $25 deposit is still due and has not been recorded as paid.",
+      message: "Your booking request was received. Your time is temporarily reserved while the $25 deposit is awaiting verification.",
       appointment: {
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
-        status: "confirmed",
+        status: "pending_payment",
         deposit_amount: 25,
       },
       email_notifications: emailResults.every((result) => result.status === "fulfilled") ? "sent" : "partial_failure",
