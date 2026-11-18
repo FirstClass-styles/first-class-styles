@@ -427,9 +427,9 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   const prettyDate=new Date(d.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   const prettyTime=new Date("2000-01-01T"+d.time+":00").toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
   summary.textContent=d.service+" · "+prettyDate+" at "+prettyTime+" · "+durationLabel(selectedDuration());
-  const message="Hello First Class Styles! My appointment is confirmed and I am sending my $25 deposit payment confirmation.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nAppointment date: "+prettyDate+"\nAppointment time: "+prettyTime+"\nPayment method: ";
+  const message="Hello First Class Styles! I submitted an appointment request and am sending my $25 deposit payment confirmation.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nAppointment date: "+prettyDate+"\nAppointment time: "+prettyTime+"\nPayment method: ";
   whatsapp.href="https://wa.me/"+BUSINESS_WHATSAPP+"?text="+encodeURIComponent(message);
-  reference.textContent="Appointment confirmed. Your $25 deposit is still due until the salon verifies payment. Use the payment details above and send your payment confirmation by WhatsApp.";
+  reference.textContent="Appointment request received — NOT YET CONFIRMED. Your selected time is temporarily reserved while the salon verifies your $25 deposit. Your appointment is confirmed only after the salon verifies the deposit. Use the payment details above and send your payment confirmation by WhatsApp.";
   confirmation.classList.add("show");
   confirmation.scrollIntoView({behavior:"smooth",block:"center"});
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
@@ -458,7 +458,7 @@ document.getElementById("year").textContent=new Date().getFullYear();
  if(!launch||!panel||!close||!log||!form||!input)return;
  const answers=[
   {keys:["hour","open","close","day"],text:"We are open Saturday through Tuesday, 9 AM–4 PM. We are closed Wednesday through Friday."},
-  {keys:["book","appointment","reserve","schedule","calendar"],text:"Use the booking planner on this website. Choose an available Saturday, Sunday, Monday, or Tuesday and a start time. Bookings must be made at least 24 hours ahead. Your appointment is confirmed when successfully submitted; the $25 deposit remains due until verified."},
+  {keys:["book","appointment","reserve","schedule","calendar"],text:"Use the booking planner on this website. Choose an available Saturday, Sunday, Monday, or Tuesday and a start time. Bookings must be made at least 24 hours ahead. Submitting the form sends an appointment request; the appointment is not confirmed until the salon verifies your $25 deposit."},
   {keys:["deposit","pay","payment","zelle","cash app","apple pay","cash"],text:"A $25 non-refundable deposit is required. Pay by Cash App at $hotgyal128 or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Send payment confirmation by WhatsApp. The remaining balance is paid in cash at the salon."},
   {keys:["service","style","weave","sew","silk","shampoo","blow"],text:"Our services are Closure Sew-In, Loc Journey, Loc Refresh, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact us for current pricing."},
   {keys:["address","location","where","map","directions"],text:"Find us at 3813 Old Silver Hill Rd, Suitland, MD 20746. Use the map in the Contact section for directions."},
