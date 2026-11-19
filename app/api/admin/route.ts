@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     const pageSize = 200;
     const query = new URLSearchParams({
       select: "id,customer_name,customer_phone,customer_email,service,starts_at,ends_at,status,deposit_amount,deposit_status,customer_notes,created_at",
-      order: "starts_at.desc",
+      order: "starts_at.desc,id.desc",
       limit: String(pageSize + 1),
       offset: String(requestedOffset),
     });
