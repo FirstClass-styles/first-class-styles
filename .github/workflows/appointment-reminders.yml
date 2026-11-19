@@ -4,6 +4,15 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
+    inputs:
+      manual_mode:
+        description: "Choose a safe reminder check"
+        required: true
+        type: choice
+        options:
+          - email_test
+          - dry_run
+        default: email_test
 
 permissions:
   contents: read
@@ -20,6 +29,7 @@ jobs:
         env:
           REMINDER_CRON_SECRET: ${{ secrets.REMINDER_CRON_SECRET }}
           EVENT_NAME: ${{ github.event_name }}
+          MANUAL_MODE: ${{ inputs.manual_mode }}
         run: |
           if [ -z "$REMINDER_CRON_SECRET" ]; then
             echo "REMINDER_CRON_SECRET is not configured in GitHub Actions."
@@ -27,8 +37,13 @@ jobs:
           fi
 
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            REMINDER_URL="https://first-class-styles.vercel.app/api/reminders?test=1"
-            echo "Running owner-inbox-only email test. No appointments will be accessed."
+            if [ "$MANUAL_MODE" = "dry_run" ]; then
+              REMINDER_URL="https://first-class-styles.vercel.app/api/reminders?dry_run=1"
+              echo "Running read-only eligibility check. No emails or database changes."
+            else
+              REMINDER_URL="https://first-class-styles.vercel.app/api/reminders?test=1"
+              echo "Running owner-inbox-only email test. No appointments will be accessed."
+            fi
           else
             REMINDER_URL="https://first-class-styles.vercel.app/api/reminders"
             echo "Running scheduled appointment reminders."
