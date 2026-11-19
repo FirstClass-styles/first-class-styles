@@ -64,17 +64,31 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   if (!validAdminSession(request)) return replyError("Please sign in to the admin dashboard.", 401);
   try {
+    const requestedOffset = Number(request.nextUrl.searchParams.get("offset") || "0");
+    if (!Number.isSafeInteger(requestedOffset) || requestedOffset < 0 || requestedOffset > 1000000) {
+      return replyError("Invalid appointment page.", 400);
+    }
+    const pageSize = 200;
     const query = new URLSearchParams({
       select: "id,customer_name,customer_phone,customer_email,service,starts_at,ends_at,status,deposit_amount,deposit_status,customer_notes,created_at",
-      order: "starts_at.desc",
-      limit: "200",
+      order: "starts_at.desc,id.desc",
+      limit: String(pageSize + 1),
+      offset: String(requestedOffset),
     });
     const response = await database("appointments?" + query.toString());
     if (!response.ok) {
       console.error("Admin appointments query failed:", response.status, await response.text());
       return replyError("Could not load appointments. Please try again.", 503);
     }
-    return NextResponse.json({ appointments: await response.json() }, { headers: { "Cache-Control": "no-store" } });
+    const rows = await response.json();
+    const hasMore = Array.isArray(rows) && rows.length > pageSize;
+    const appointments = hasMore ? rows.slice(0, pageSize) : rows;
+    return NextResponse.json({
+      appointments,
+      hasMore,
+      offset: requestedOffset,
+      pageSize,
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Admin appointments error:", error);
     return replyError("Could not connect to the appointment database.", 503);
@@ -109,10 +123,24 @@ export async function PATCH(request: NextRequest) {
     const beforeRows = await beforeResponse.json();
     if (!Array.isArray(beforeRows) || beforeRows.length === 0) return replyError("Appointment not found.", 404);
     const previous = beforeRows[0];
+    if (body.action === "verify_deposit" &&
+        (previous.status !== "pending_payment" || previous.deposit_status !== "pending")) {
+      return replyError("Only a booking awaiting its first deposit verification can be confirmed.", 409);
+    }
+    if (body.action === "reject_deposit" &&
+        (previous.status !== "pending_payment" || previous.deposit_status !== "pending")) {
+      return replyError("Only a booking awaiting its first deposit verification can be rejected here.", 409);
+    }
     if (body.action === "mark_test" && previous.status !== "cancelled") return replyError("Cancel the appointment before marking it as a test record.", 409);
     if (body.action === "mark_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
 
-    const query = new URLSearchParams({ id: "eq." + body.id, select: "id,status,deposit_status" });
+    const query = new URLSearchParams({
+      id: "eq." + body.id,
+      ...(body.action === "verify_deposit" || body.action === "reject_deposit"
+        ? { status: "eq.pending_payment", deposit_status: "eq.pending" }
+        : {}),
+      select: "id,status,deposit_status",
+    });
     const response = await database("appointments?" + query.toString(), {
       method: "PATCH",
       body: JSON.stringify(update),
