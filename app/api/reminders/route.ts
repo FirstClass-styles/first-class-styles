@@ -68,6 +68,8 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const dryRun = request.nextUrl.searchParams.get("dry_run") === "1";
+
   try {
     const now = Date.now();
     // The hourly free scheduler checks a one-hour window around the 24-hour mark.
@@ -76,7 +78,8 @@ export async function GET(request: NextRequest) {
     const staleClaim = new Date(now - 30 * 60 * 1000).toISOString();
 
     const query = new URLSearchParams({
-      select: "id,customer_name,customer_email,service,starts_at,owner_reminder_sent_at,customer_reminder_sent_at",
+      // Dry-run selects only IDs and never exposes appointment or customer details.
+      select: dryRun ? "id" : "id,customer_name,customer_email,service,starts_at,owner_reminder_sent_at,customer_reminder_sent_at",
       starts_at: "gte." + windowStart,
       ends_at: "gt." + new Date(now).toISOString(),
       status: "eq.confirmed",
@@ -96,6 +99,18 @@ export async function GET(request: NextRequest) {
     }
 
     const appointments = await found.json() as Appointment[];
+
+    // Read-only verification of the live eligibility query: no claims, emails, or database writes.
+    if (dryRun) {
+      return NextResponse.json({
+        success: true,
+        dry_run: true,
+        eligible_count: appointments.length,
+        window: "23–25 hours before appointment",
+        message: "Read-only check completed. No emails were sent and no appointments were changed.",
+      }, { headers: { "Cache-Control": "no-store" } });
+    }
+
     let sent = 0;
     let skipped = 0;
     const failures: string[] = [];
