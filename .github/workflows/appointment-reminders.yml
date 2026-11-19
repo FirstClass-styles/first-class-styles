@@ -19,12 +19,22 @@ jobs:
       - name: Call the reminder service
         env:
           REMINDER_CRON_SECRET: ${{ secrets.REMINDER_CRON_SECRET }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ -z "$REMINDER_CRON_SECRET" ]; then
             echo "REMINDER_CRON_SECRET is not configured in GitHub Actions."
             exit 1
           fi
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            REMINDER_URL="https://first-class-styles.vercel.app/api/reminders?test=1"
+            echo "Running owner-inbox-only email test. No appointments will be accessed."
+          else
+            REMINDER_URL="https://first-class-styles.vercel.app/api/reminders"
+            echo "Running scheduled appointment reminders."
+          fi
+
           curl --fail --silent --show-error \
             --retry 2 --retry-delay 10 \
             -H "Authorization: Bearer $REMINDER_CRON_SECRET" \
-            "https://first-class-styles.vercel.app/api/reminders"
+            "$REMINDER_URL"
