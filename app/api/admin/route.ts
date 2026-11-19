@@ -64,17 +64,31 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   if (!validAdminSession(request)) return replyError("Please sign in to the admin dashboard.", 401);
   try {
+    const requestedOffset = Number(request.nextUrl.searchParams.get("offset") || "0");
+    if (!Number.isSafeInteger(requestedOffset) || requestedOffset < 0 || requestedOffset > 1000000) {
+      return replyError("Invalid appointment page.", 400);
+    }
+    const pageSize = 200;
     const query = new URLSearchParams({
       select: "id,customer_name,customer_phone,customer_email,service,starts_at,ends_at,status,deposit_amount,deposit_status,customer_notes,created_at",
       order: "starts_at.desc",
-      limit: "200",
+      limit: String(pageSize + 1),
+      offset: String(requestedOffset),
     });
     const response = await database("appointments?" + query.toString());
     if (!response.ok) {
       console.error("Admin appointments query failed:", response.status, await response.text());
       return replyError("Could not load appointments. Please try again.", 503);
     }
-    return NextResponse.json({ appointments: await response.json() }, { headers: { "Cache-Control": "no-store" } });
+    const rows = await response.json();
+    const hasMore = Array.isArray(rows) && rows.length > pageSize;
+    const appointments = hasMore ? rows.slice(0, pageSize) : rows;
+    return NextResponse.json({
+      appointments,
+      hasMore,
+      offset: requestedOffset,
+      pageSize,
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Admin appointments error:", error);
     return replyError("Could not connect to the appointment database.", 503);
