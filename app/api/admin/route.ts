@@ -109,10 +109,24 @@ export async function PATCH(request: NextRequest) {
     const beforeRows = await beforeResponse.json();
     if (!Array.isArray(beforeRows) || beforeRows.length === 0) return replyError("Appointment not found.", 404);
     const previous = beforeRows[0];
+    if (body.action === "verify_deposit" &&
+        (previous.status !== "pending_payment" || previous.deposit_status !== "pending")) {
+      return replyError("Only a booking awaiting its first deposit verification can be confirmed.", 409);
+    }
+    if (body.action === "reject_deposit" &&
+        (previous.status !== "pending_payment" || previous.deposit_status !== "pending")) {
+      return replyError("Only a booking awaiting its first deposit verification can be rejected here.", 409);
+    }
     if (body.action === "mark_test" && previous.status !== "cancelled") return replyError("Cancel the appointment before marking it as a test record.", 409);
     if (body.action === "mark_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
 
-    const query = new URLSearchParams({ id: "eq." + body.id, select: "id,status,deposit_status" });
+    const query = new URLSearchParams({
+      id: "eq." + body.id,
+      ...(body.action === "verify_deposit" || body.action === "reject_deposit"
+        ? { status: "eq.pending_payment", deposit_status: "eq.pending" }
+        : {}),
+      select: "id,status,deposit_status",
+    });
     const response = await database("appointments?" + query.toString(), {
       method: "PATCH",
       body: JSON.stringify(update),
