@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     const staleClaim = new Date(now - 30 * 60 * 1000).toISOString();
 
     const query = new URLSearchParams({
-      select: "id,customer_name,customer_email,service,starts_at",
+      select: "id,customer_name,customer_email,service,starts_at,owner_reminder_sent_at,customer_reminder_sent_at",
       starts_at: "gte." + windowStart,
       ends_at: "gt." + new Date(now).toISOString(),
       status: "eq.confirmed",
@@ -160,15 +160,28 @@ export async function GET(request: NextRequest) {
       ].join("\n");
 
       try {
-        const tasks = [
-          sendEmail(OWNER_EMAIL, "Tomorrow's confirmed appointment — " + appointment.customer_name, ownerMessage),
-          ...(appointment.customer_email
-            ? [sendEmail(appointment.customer_email, "Appointment reminder — First Class Styles", customerMessage)]
-            : []),
-        ];
-        const results = await Promise.allSettled(tasks);
-        const failed = results.some((result) => result.status === "rejected");
-        if (failed) throw new Error("One or more reminder emails could not be sent.");
+        // Track each recipient separately. If one delivery succeeds and the other fails,
+        // the next hourly run retries only the recipient that has not been recorded as sent.
+        if (!appointment.owner_reminder_sent_at) {
+          await sendEmail(OWNER_EMAIL, "Tomorrow's confirmed appointment — " + appointment.customer_name, ownerMessage);
+          const ownerMark = await database("appointments?id=eq." + encodeURIComponent(appointment.id) + "&owner_reminder_sent_at=is.null", {
+            method: "PATCH",
+            body: JSON.stringify({ owner_reminder_sent_at: new Date().toISOString() }),
+          });
+          if (!ownerMark.ok) throw new Error("Owner reminder sent but its delivery status could not be saved.");
+          const ownerRows = await ownerMark.json();
+          if (!Array.isArray(ownerRows) || ownerRows.length === 0) throw new Error("Owner reminder status was not saved.");
+        }
+        if (appointment.customer_email && !appointment.customer_reminder_sent_at) {
+          await sendEmail(appointment.customer_email, "Appointment reminder — First Class Styles", customerMessage);
+          const customerMark = await database("appointments?id=eq." + encodeURIComponent(appointment.id) + "&customer_reminder_sent_at=is.null", {
+            method: "PATCH",
+            body: JSON.stringify({ customer_reminder_sent_at: new Date().toISOString() }),
+          });
+          if (!customerMark.ok) throw new Error("Customer reminder sent but its delivery status could not be saved.");
+          const customerRows = await customerMark.json();
+          if (!Array.isArray(customerRows) || customerRows.length === 0) throw new Error("Customer reminder status was not saved.");
+        }
 
         const mark = await database("appointments?id=eq." + encodeURIComponent(appointment.id) + "&reminder_sent_at=is.null", {
           method: "PATCH",
