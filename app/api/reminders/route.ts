@@ -39,6 +39,8 @@ type Appointment = {
   customer_email: string | null;
   service: string;
   starts_at: string;
+  owner_reminder_sent_at: string | null;
+  customer_reminder_sent_at: string | null;
 };
 
 export async function GET(request: NextRequest) {
