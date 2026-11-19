@@ -25,6 +25,9 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -39,6 +42,8 @@ export default function AdminPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load appointments.");
       setAppointments(data.appointments || []);
+      setHasMore(Boolean(data.hasMore));
+      setNextOffset(Number(data.offset || 0) + (data.appointments || []).length);
       setSignedIn(true);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Could not load appointments.";
@@ -48,6 +53,26 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  async function loadOlderAppointments() {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin?offset=" + nextOffset, { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not load older appointments.");
+      const existing = new Set(appointments.map((item) => item.id));
+      const older = (data.appointments || []).filter((item: Appointment) => !existing.has(item.id));
+      setAppointments((current) => [...current, ...older]);
+      setHasMore(Boolean(data.hasMore));
+      setNextOffset(Number(data.offset || nextOffset) + (data.appointments || []).length);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load older appointments.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function signIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy("login"); setError("");
@@ -183,7 +208,7 @@ export default function AdminPage() {
 
             <section className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
               <div className="mb-5 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">Appointments</h2><p className="mt-1 text-sm text-[#aaa49a]">Latest 200 records · times shown in Maryland local time</p></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">Appointments</h2><p className="mt-1 text-sm text-[#aaa49a]">{appointments.length} records loaded{hasMore ? " · more history available" : " · all records loaded"} · times shown in Maryland local time</p></div>
                   <select aria-label="Filter appointments" value={filter} onChange={(e) => setFilter(e.target.value)} className="w-full rounded-xl border border-[#d7b56d]/30 bg-[#080706] px-3 py-3 text-sm sm:w-auto"><option value="all">All appointments</option><option value="pending">Deposit pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select>
                 </div>
                 <input type="search" aria-label="Search appointments" placeholder="Search customer, phone, email or service…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-xl border border-[#d7b56d]/30 bg-[#080706] px-4 py-3 text-sm text-[#faf8f3] placeholder:text-[#777168] outline-none focus:border-[#d7b56d]" />
@@ -212,6 +237,7 @@ export default function AdminPage() {
                   </article>)}
                 </div>
               )}
+              {hasMore && <div className="mt-5 flex justify-center"><button type="button" onClick={() => void loadOlderAppointments()} disabled={loadingMore || loading} className="min-h-12 rounded-xl border border-[#d7b56d]/40 px-5 py-3 text-sm font-semibold text-[#f5dc9d] disabled:opacity-50">{loadingMore ? "Loading older appointments…" : "Load older appointments"}</button></div>}
             </section>
           </>
         )}
