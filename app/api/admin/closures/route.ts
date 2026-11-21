@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
     const q = new URLSearchParams({ select: "id,closed_date,reason,created_at", order: "closed_date.asc" });
     const response = await db("salon_closed_dates?" + q.toString());
     if (!response.ok) {
-      const detail = await response.text();
       console.error("Closed dates query failed with status:", response.status);
       return error("The closure calendar database is not ready. Apply the salon_closed_dates migration in Supabase, then refresh.", 503);
     }
