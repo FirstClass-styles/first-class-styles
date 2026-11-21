@@ -88,7 +88,7 @@ export async function GET() {
     });
     const response = await supabaseRequest(`appointments?${query.toString()}`);
     if (!response.ok) {
-      console.error("Availability query failed:", response.status, await response.text());
+      console.error("Availability query failed with status:", response.status);
       return jsonError("We couldn't load live availability. Please try again shortly.", 503);
     }
     const appointments = await response.json();
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
     const closureQuery = new URLSearchParams({ select: "id", closed_date: "eq." + date, limit: "1" });
     const closureResponse = await supabaseRequest("salon_closed_dates?" + closureQuery.toString());
     if (!closureResponse.ok) {
-      console.error("Closure date check failed:", closureResponse.status, await closureResponse.text());
+      console.error("Closure date check failed with status:", closureResponse.status);
       return jsonError("Online booking is temporarily unavailable while the salon calendar is updated. Please contact the salon directly.", 503);
     }
     const closureRows = await closureResponse.json();
@@ -190,11 +190,11 @@ export async function POST(request: NextRequest) {
       if (/prevent_double_booking|exclusion|overlap|23P01/i.test(detail)) {
         return jsonError("That time was just booked. Please choose another available time.", 409);
       }
-      console.error("Booking insert rejected:", detail);
+      console.error("Booking insert rejected with status:", insertResponse.status);
       return jsonError("We couldn't save this booking. Please check the details and try again.", 400);
     }
     if (!insertResponse.ok) {
-      console.error("Booking insert failed:", insertResponse.status, await insertResponse.text());
+      console.error("Booking insert failed with status:", insertResponse.status);
       return jsonError("We couldn't save your booking right now. Please try again shortly.", 503);
     }
 
