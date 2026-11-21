@@ -93,8 +93,7 @@ export async function GET(request: NextRequest) {
     query.set("and", "(starts_at.lte." + windowEnd + ")");
     const found = await database("appointments?" + query.toString());
     if (!found.ok) {
-      const detail = await found.text();
-      console.error("Reminder lookup failed:", found.status, detail);
+      console.error("Reminder lookup failed with status:", found.status);
       return NextResponse.json({ error: "Could not load appointments for reminders." }, { status: 503 });
     }
 
