@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     });
     const response = await database("appointments?" + query.toString());
     if (!response.ok) {
-      console.error("Admin appointments query failed:", response.status, await response.text());
+      console.error("Admin appointments query failed with status:", response.status);
       return replyError("Could not load appointments. Please try again.", 503);
     }
     const rows = await response.json();
@@ -118,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     });
     const beforeResponse = await database("appointments?" + lookup.toString());
     if (!beforeResponse.ok) {
-      console.error("Admin appointment lookup failed:", beforeResponse.status);
+      console.error("Admin appointment lookup failed with status:", beforeResponse.status);
       return replyError("The appointment could not be loaded.", 503);
     }
     const beforeRows = await beforeResponse.json();
@@ -149,7 +149,7 @@ export async function PATCH(request: NextRequest) {
       body: JSON.stringify(update),
     });
     if (!response.ok) {
-      console.error("Admin appointment update failed:", response.status, await response.text());
+      console.error("Admin appointment update failed with status:", response.status);
       return replyError("The appointment could not be updated.", 503);
     }
     const rows = await response.json();
@@ -232,7 +232,7 @@ export async function DELETE(request: NextRequest) {
     const check = await database("appointments?id=eq." + encodeURIComponent(id) + "&select=id,status,customer_notes"); if (!check.ok) return replyError("The record could not be checked before deletion.", 503); const checked = await check.json(); if (!Array.isArray(checked) || checked.length === 0) return replyError("Appointment not found.", 404); if (checked[0].status !== "cancelled" || !String(checked[0].customer_notes || "").startsWith("[TEST RECORD]")) return replyError("Only cancelled records explicitly marked as test records can be permanently deleted.", 409); const query = new URLSearchParams({ id: "eq." + id, status: "eq.cancelled", select: "id" });
     const response = await database("appointments?" + query.toString(), { method: "DELETE" });
     if (!response.ok) {
-      console.error("Admin appointment delete failed:", response.status, await response.text());
+      console.error("Admin appointment delete failed with status:", response.status);
       return replyError("The test record could not be deleted.", 503);
     }
     const rows = await response.json();
