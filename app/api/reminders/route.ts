@@ -93,8 +93,7 @@ export async function GET(request: NextRequest) {
     query.set("and", "(starts_at.lte." + windowEnd + ")");
     const found = await database("appointments?" + query.toString());
     if (!found.ok) {
-      const detail = await found.text();
-      console.error("Reminder lookup failed:", found.status, detail);
+      console.error("Reminder lookup failed with status:", found.status);
       return NextResponse.json({ error: "Could not load appointments for reminders." }, { status: 503 });
     }
 
@@ -130,7 +129,7 @@ export async function GET(request: NextRequest) {
         body: JSON.stringify({ reminder_claimed_at: new Date().toISOString() }),
       });
       if (!claim.ok) {
-        failures.push(appointment.id + ": could not claim reminder");
+        failures.push("could not claim reminder");
         continue;
       }
       const claimedRows = await claim.json();
@@ -211,13 +210,13 @@ export async function GET(request: NextRequest) {
         }
         sent++;
       } catch (error) {
-        console.error("Reminder send failed for appointment:", appointment.id, error);
-        failures.push(appointment.id + ": email send or status update failed");
+        console.error("Reminder send or status recording failed.");
+        failures.push("email send or status update failed");
         // Release the claim so the next scheduled run can retry.
         await database("appointments?id=eq." + encodeURIComponent(appointment.id) + "&reminder_sent_at=is.null", {
           method: "PATCH",
           body: JSON.stringify({ reminder_claimed_at: null }),
-        }).catch((releaseError) => console.error("Could not release reminder claim:", releaseError));
+        }).catch((releaseError) => console.error("Could not release reminder claim."));
       }
     }
 
