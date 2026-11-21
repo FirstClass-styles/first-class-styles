@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const response = await db("salon_closed_dates?" + q.toString());
     if (!response.ok) {
       const detail = await response.text();
-      console.error("Closed dates query failed:", response.status, detail);
+      console.error("Closed dates query failed with status:", response.status);
       return error("The closure calendar database is not ready. Apply the salon_closed_dates migration in Supabase, then refresh.", 503);
     }
     return NextResponse.json({ closures: await response.json() }, { headers: { "Cache-Control": "no-store" } });
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ closed_date: body.date, reason: reason || null }),
     });
     if (!response.ok) {
-      console.error("Closure save failed:", response.status, await response.text());
+      console.error("Closure save failed with status:", response.status);
       return error("Could not save this closure date. Confirm the Supabase migration has been applied.", 503);
     }
     const rows = await response.json();
@@ -67,7 +67,7 @@ export async function DELETE(request: NextRequest) {
     const q = new URLSearchParams({ id: "eq." + id, select: "id,closed_date" });
     const response = await db("salon_closed_dates?" + q.toString(), { method: "DELETE" });
     if (!response.ok) {
-      console.error("Closure removal failed:", response.status, await response.text());
+      console.error("Closure removal failed with status:", response.status);
       return error("Could not reopen this date.", 503);
     }
     const rows = await response.json();
