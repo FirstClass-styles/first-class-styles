@@ -86,8 +86,8 @@ export default function AdminPage() {
   }
 
   async function act(id: string, action: string) {
-    const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled." };
-    if (action === "cancel" && !window.confirm("Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
+    const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled.", cancel_test: "Test appointment cancelled, marked as test, and customer email suppressed." };
+    if ((action === "cancel" || action === "cancel_test") && !window.confirm(action === "cancel_test" ? "Cancel this fake/test appointment, mark it as a test record, release the time, and suppress cancellation email? Use ONLY for appointments you know are fake." : "Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
     if (action === "delete" && !window.confirm("Permanently delete this record? Use only for fake/test appointments. This cannot be undone.")) return;
     setBusy(id); setError(""); setNotice("");
     try {
@@ -230,7 +230,7 @@ export default function AdminPage() {
                         className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
                       >{a.status === "confirmed" && a.deposit_status === "verified" ? "Prepare WhatsApp appointment reminder" : "Message this customer on WhatsApp"}</a>}
                       {a.deposit_status === "pending" && <><button type="button" disabled={busy === a.id} aria-busy={busy === a.id} onClick={() => void act(a.id, "verify_deposit")} className="relative z-10 min-h-12 touch-manipulation pointer-events-auto select-none rounded-lg bg-[#d7b56d] px-4 py-3 text-sm font-bold text-[#17110a] disabled:cursor-wait disabled:opacity-50">Verify $25 deposit & confirm</button><button type="button" disabled={busy === a.id} aria-busy={busy === a.id} onClick={() => void act(a.id, "reject_deposit")} className="relative z-10 min-h-12 touch-manipulation pointer-events-auto select-none rounded-lg border border-amber-500/40 px-4 py-3 text-sm text-amber-200 disabled:cursor-wait disabled:opacity-50">Mark deposit not received</button></>}
-                      {a.status !== "cancelled" && <button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button>}
+                      {a.status !== "cancelled" && <><button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button><button disabled={busy === a.id} onClick={() => void act(a.id, "cancel_test")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Cancel + mark as test (no email)</button></>}
                       {a.status === "cancelled" && !String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "mark_test")} className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark as test record</button>}
                       {a.status === "cancelled" && String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "delete")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Delete test record</button>}
                     </div>
