@@ -44,7 +44,7 @@ export default function AdminPreviewPage() {
             <div className="flex items-center gap-3"><div className="hidden text-right sm:block"><p className="text-sm font-medium">Salon Owner</p><p className="text-xs text-[#999187]">Administrator</p></div><div className="grid h-10 w-10 place-items-center rounded-full border border-[#d2b36b]/35 bg-[#211a10] text-[#e5c77e]">FC</div></div>
           </header>
 
-          {menuOpen && <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-[#d2b36b]/20 bg-[#12100d] p-2 lg:hidden">{nav.map((item) => <button key={item} onClick={() => { setActive(item); setMenuOpen(false); }} className={`rounded-lg p-2 text-left text-xs ${active===item?"bg-[#d2b36b]/15 text-[#f0d59a]":"text-[#b4aca0"}`}>{item}</button>)}</div>}
+          {menuOpen && <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-[#d2b36b]/20 bg-[#12100d] p-2 lg:hidden">{nav.map((item) => <button key={item} onClick={() => { setActive(item); setMenuOpen(false); }} className={`rounded-lg p-2 text-left text-xs ${active===item?"bg-[#d2b36b]/15 text-[#f0d59a]":"text-[#b4aca0]"}`}>{item}</button>)}</div>}
 
           <div className="mt-6 rounded-2xl border border-[#d2b36b]/25 bg-gradient-to-r from-[#20190f] via-[#17130f] to-[#100e0b] p-5 sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -98,7 +98,7 @@ function Brand() {
   return <div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl border border-[#d2b36b]/35 bg-[#211a10] text-sm text-[#e4c477]">FC</div><div><p className="text-sm font-semibold tracking-wide">First Class Styles</p><p className="text-[10px] uppercase tracking-[.17em] text-[#8d8274]">Salon & Hair Spa</p></div></div>;
 }
 function Metric({label,value,sub,icon,accent}:{label:string;value:string;sub:string;icon:string;accent?:boolean}) {
-  return <div className={`rounded-2xl border p-4 sm:p-5 ${accent?"border-[#d2b36b]/35 bg-[#1b150d]":"border-[#d2b36b]/12 bg-[#12100d"}`}><div className="flex items-center justify-between"><p className="text-xs text-[#a59b8e]">{label}</p><span className="text-[#d2b36b]">{icon}</span></div><p className={`mt-3 text-3xl font-semibold tracking-tight ${accent?"text-[#e9ce8c]":"text-[#f3eee4"}`}>{value}</p><p className="mt-1 text-xs text-[#8f8579]">{sub}</p></div>;
+  return <div className={`rounded-2xl border p-4 sm:p-5 ${accent?"border-[#d2b36b]/35 bg-[#1b150d]":"border-[#d2b36b]/12 bg-[#12100d]"}`}><div className="flex items-center justify-between"><p className="text-xs text-[#a59b8e]">{label}</p><span className="text-[#d2b36b]">{icon}</span></div><p className={`mt-3 text-3xl font-semibold tracking-tight ${accent?"text-[#e9ce8c]":"text-[#f3eee4]"}`}>{value}</p><p className="mt-1 text-xs text-[#8f8579]">{sub}</p></div>;
 }
 function QuickAction({title,description,onClick}:{title:string;description:string;onClick:()=>void}) {
   return <button onClick={onClick} className="rounded-2xl border border-[#d2b36b]/12 bg-[#12100d] p-4 text-left transition hover:border-[#d2b36b]/30 hover:bg-[#19140e]"><p className="text-sm font-medium text-[#e5c77e]">{title} ↗</p><p className="mt-1 text-xs text-[#91877b]">{description}</p></button>;
