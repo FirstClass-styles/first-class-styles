@@ -23,7 +23,7 @@ export async function GET() {
       cache: "no-store",
     });
     if (!response.ok) {
-      console.error("Public closure lookup failed:", response.status, await response.text());
+      console.error("Public closure lookup failed with status:", response.status);
       return NextResponse.json({ error: "Booking calendar is temporarily unavailable." }, { status: 503 });
     }
     const rows = await response.json();

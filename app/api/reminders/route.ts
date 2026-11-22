@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       );
       return NextResponse.json({ success: true, test_email_sent: true, recipient: OWNER_EMAIL });
     } catch (error) {
-      console.error("Reminder test email failed:", error);
+      console.error("Reminder test email failed.");
       return NextResponse.json({ error: "Test reminder email could not be sent." }, { status: 503 });
     }
   }
