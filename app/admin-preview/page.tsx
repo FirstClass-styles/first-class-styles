@@ -55,7 +55,6 @@ export default function AdminPreviewPage() {
           {menuOpen && <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-[#d2b36b]/20 bg-[#12100d] p-2 lg:hidden">{nav.map((item) => <button key={item} onClick={() => { setActive(item); setMenuOpen(false); }} className={`rounded-lg p-2 text-left text-xs ${active===item?"bg-[#d2b36b]/15 text-[#f0d59a]":"text-[#b4aca0]"}`}>{item}</button>)}</div>}
 
           {active === "Overview" ? <>
-          {active === "Overview" ? <>
           <div className="mt-6 rounded-2xl border border-[#d2b36b]/25 bg-gradient-to-r from-[#20190f] via-[#17130f] to-[#100e0b] p-5 sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div><p className="text-xs uppercase tracking-[.2em] text-[#d2b36b]">Your day, beautifully organized</p><h2 className="mt-2 text-xl font-semibold sm:text-2xl">{greeting}, Kemariah <span className="text-[#d2b36b]">✦</span></h2><p className="mt-2 max-w-xl text-sm text-[#b0a79a]">Here’s a calm overview of what’s happening in your salon today.</p></div>
@@ -96,8 +95,6 @@ export default function AdminPreviewPage() {
             <QuickAction title="Verify deposits" description="Confirm payment receipts" onClick={()=>setActive("Deposits & Payments")} />
             <QuickAction title="Manage closures" description="Set days off or vacation" onClick={()=>setActive("Salon Closures")} />
           </div>
-          </> : <PreviewModule active={active} todayLabel={todayLabel} />}
-
           </> : <PreviewModule active={active} todayLabel={todayLabel} />}
 
           <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#d2b36b]/10 pt-5 text-xs text-[#766d62]"><span>First Class Styles · Salon & Hair Spa</span><span>Luxury Command Center · Preview concept</span></footer>
