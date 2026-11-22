@@ -54,6 +54,7 @@ export default function AdminPreviewPage() {
 
           {menuOpen && <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-[#d2b36b]/20 bg-[#12100d] p-2 lg:hidden">{nav.map((item) => <button key={item} onClick={() => { setActive(item); setMenuOpen(false); }} className={`rounded-lg p-2 text-left text-xs ${active===item?"bg-[#d2b36b]/15 text-[#f0d59a]":"text-[#b4aca0]"}`}>{item}</button>)}</div>}
 
+          {active === "Overview" ? <>
           <div className="mt-6 rounded-2xl border border-[#d2b36b]/25 bg-gradient-to-r from-[#20190f] via-[#17130f] to-[#100e0b] p-5 sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div><p className="text-xs uppercase tracking-[.2em] text-[#d2b36b]">Your day, beautifully organized</p><h2 className="mt-2 text-xl font-semibold sm:text-2xl">{greeting}, Kemariah <span className="text-[#d2b36b]">✦</span></h2><p className="mt-2 max-w-xl text-sm text-[#b0a79a]">Here’s a calm overview of what’s happening in your salon today.</p></div>
@@ -94,6 +95,8 @@ export default function AdminPreviewPage() {
             <QuickAction title="Verify deposits" description="Confirm payment receipts" onClick={()=>setActive("Deposits & Payments")} />
             <QuickAction title="Manage closures" description="Set days off or vacation" onClick={()=>setActive("Salon Closures")} />
           </div>
+          </> : <PreviewModule active={active} todayLabel={todayLabel} />}
+
           <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#d2b36b]/10 pt-5 text-xs text-[#766d62]"><span>First Class Styles · Salon & Hair Spa</span><span>Luxury Command Center · Preview concept</span></footer>
         </section>
       </div>
@@ -110,4 +113,19 @@ function Metric({label,value,sub,icon,accent}:{label:string;value:string;sub:str
 }
 function QuickAction({title,description,onClick}:{title:string;description:string;onClick:()=>void}) {
   return <button onClick={onClick} className="rounded-2xl border border-[#d2b36b]/12 bg-[#12100d] p-4 text-left transition hover:border-[#d2b36b]/30 hover:bg-[#19140e]"><p className="text-sm font-medium text-[#e5c77e]">{title} ↗</p><p className="mt-1 text-xs text-[#91877b]">{description}</p></button>;
+}
+
+function PreviewModule({active,todayLabel}:{active:string;todayLabel:string}) {
+ const panel="rounded-2xl border border-[#d2b36b]/15 bg-[#12100d] p-4 sm:p-5";
+ const demo="rounded-xl border border-white/[.06] bg-[#0a0908] p-3";
+ return <div className="mt-6 space-y-4">
+  <div className="rounded-2xl border border-[#d2b36b]/20 bg-gradient-to-r from-[#20190f] to-[#100e0b] p-5"><p className="text-xs uppercase tracking-[.2em] text-[#d2b36b]">Demo workspace</p><h2 className="mt-2 text-xl font-semibold">{active}</h2><p className="mt-1 text-sm text-[#a99f93]">Preview only · No live data or actions connected.</p></div>
+  {active==="Appointment Calendar"&&<div className={panel}><h3 className="font-semibold">November 2026 · Sample calendar</h3><div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="py-2 text-[#8e857a]">{d}</div>)}{Array.from({length:35},(_,i)=>{const day=i-5;return <div key={i} className={`min-h-12 rounded-lg p-1 text-left ${day>0&&day<=30?"bg-white/[.025] text-[#e7dfd2]":"text-[#665d53]"}`}>{day>0&&day<=30?day:""}{[3,7,11,15,19,24].includes(day)&&<span className="mt-1 block rounded bg-[#d2b36b]/15 px-1 text-[8px] text-[#d2b36b]">Demo appt</span>}</div>})}</div></div>}
+  {active==="Booking Requests"&&<div className={panel}><h3 className="font-semibold">Fictional booking requests</h3><div className="mt-3 space-y-2">{demoAppointments.map(x=><div key={x.name} className={demo}><p className="font-medium">{x.name} · {x.status}</p><p className="mt-1 text-sm text-[#d2b36b]">{x.service}</p><p className="text-xs text-[#91877c]">{x.time} · {x.duration}</p></div>)}</div></div>}
+  {active==="Deposits & Payments"&&<div className={panel}><h3 className="font-semibold">Deposit snapshot · sample figures</h3><div className="mt-3 grid grid-cols-2 gap-3"><div className={demo}><p className="text-xs text-[#9d9488]">Awaiting</p><p className="mt-1 text-xl text-[#e8ca86]">$50</p></div><div className={demo}><p className="text-xs text-[#9d9488]">Verified</p><p className="mt-1 text-xl text-emerald-200">$50</p></div></div><p className="mt-3 text-xs text-[#93897d]">Payments cannot be verified or processed here.</p></div>}
+  {active==="Clients"&&<div className={panel}><h3 className="font-semibold">Sample client list</h3><div className="mt-3 space-y-2">{demoAppointments.map(x=><div key={x.name} className={demo}><p className="font-medium">{x.name}</p><p className="mt-1 text-xs text-[#91877c]">Service: {x.service} · Demo profile</p></div>)}</div></div>}
+  {active==="Gallery Management"&&<div className={panel}><h3 className="font-semibold">Gallery slots · visual mockup</h3><div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">{["01","02","03"].map(n=><div key={n} className="aspect-square rounded-xl border border-dashed border-[#d2b36b]/25 bg-[#0a0908] p-3 flex flex-col justify-end"><p className="text-xs text-[#d2b36b">Slot {n}</p><p className="text-[10px] text-[#91877c]">No image attached</p></div>)}</div></div>}
+  {active==="Salon Closures"&&<div className={panel}><h3 className="font-semibold">Salon availability pattern</h3><div className="mt-3 grid grid-cols-2 gap-3"><div className={demo}><p className="text-xs text-[#91877c]">Booking days</p><p className="mt-1 text-emerald-200">Saturday–Tuesday</p></div><div className={demo}><p className="text-xs text-[#91877c]">Closed</p><p className="mt-1 text-amber-200">Wednesday–Friday</p></div></div><p className="mt-3 text-xs text-[#93897d]">Date controls are not connected in this demo.</p></div>}
+  {active==="Settings"&&<div className={panel}><h3 className="font-semibold">Settings · preview</h3><div className="mt-3 space-y-2">{[["Hours","Sat–Tue · 9 AM–4 PM"],["Booking lead time","24 hours minimum"],["Deposit","$25 non-refundable"],["Preview date",todayLabel]].map(([k,v])=><div key={k} className={demo}><p className="text-xs text-[#91877c]">{k}</p><p className="mt-1">{v}</p></div>)}</div></div>}
+ </div>;
 }
