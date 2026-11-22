@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const demoAppointments = [
-  { time: "9:00 AM", name: "Arielle Johnson", service: "Signature Silk Press", duration: "2 hrs", status: "Confirmed", deposit: "Verified" },
-  { time: "11:30 AM", name: "Nia Campbell", service: "Loc Refresh", duration: "2 hrs", status: "Pending", deposit: "Awaiting" },
-  { time: "2:00 PM", name: "Kayla Morgan", service: "Quick Weave", duration: "2 hrs 30 min", status: "Confirmed", deposit: "Verified" },
+  { time: "9:00 AM", name: "Sample Client A", service: "Signature Silk Press", duration: "2 hrs", status: "Confirmed", deposit: "Verified" },
+  { time: "11:30 AM", name: "Sample Client B", service: "Loc Refresh", duration: "2 hrs", status: "Pending", deposit: "Awaiting" },
+  { time: "2:00 PM", name: "Sample Client C", service: "Quick Weave", duration: "2 hrs 30 min", status: "Confirmed", deposit: "Verified" },
 ];
 
 const nav = ["Overview", "Appointment Calendar", "Booking Requests", "Deposits & Payments", "Clients", "Gallery Management", "Salon Closures", "Settings"];
@@ -13,6 +13,14 @@ const nav = ["Overview", "Appointment Calendar", "Booking Requests", "Deposits &
 export default function AdminPreviewPage() {
   const [active, setActive] = useState("Overview");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [todayLabel, setTodayLabel] = useState("");
+  const [greeting, setGreeting] = useState("Welcome");
+  useEffect(() => {
+    const now = new Date();
+    setTodayLabel(now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }));
+    const hour = now.getHours();
+    setGreeting(hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#090807] text-[#f6f1e8]">
@@ -48,8 +56,8 @@ export default function AdminPreviewPage() {
 
           <div className="mt-6 rounded-2xl border border-[#d2b36b]/25 bg-gradient-to-r from-[#20190f] via-[#17130f] to-[#100e0b] p-5 sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div><p className="text-xs uppercase tracking-[.2em] text-[#d2b36b]">Your day, beautifully organized</p><h2 className="mt-2 text-xl font-semibold sm:text-2xl">Good afternoon, Kemariah <span className="text-[#d2b36b]">✦</span></h2><p className="mt-2 max-w-xl text-sm text-[#b0a79a]">Here’s a calm overview of what’s happening in your salon today.</p></div>
-              <div className="rounded-xl border border-[#d2b36b]/20 bg-black/20 px-4 py-3"><p className="text-xs text-[#a69d90]">Today · Demo preview</p><p className="mt-1 text-sm font-medium">Saturday, November 22</p></div>
+              <div><p className="text-xs uppercase tracking-[.2em] text-[#d2b36b]">Your day, beautifully organized</p><h2 className="mt-2 text-xl font-semibold sm:text-2xl">{greeting}, Kemariah <span className="text-[#d2b36b]">✦</span></h2><p className="mt-2 max-w-xl text-sm text-[#b0a79a]">Here’s a calm overview of what’s happening in your salon today.</p></div>
+              <div className="rounded-xl border border-[#d2b36b]/20 bg-black/20 px-4 py-3"><p className="text-xs text-[#a69d90]">Today · Demo preview</p><p className="mt-1 text-sm font-medium">{todayLabel || "Loading today"}</p></div>
             </div>
           </div>
 
@@ -64,10 +72,10 @@ export default function AdminPreviewPage() {
             <div className="rounded-2xl border border-[#d2b36b]/15 bg-[#12100d] p-4 sm:p-5">
               <div className="flex items-start justify-between"><div><p className="text-xs uppercase tracking-[.17em] text-[#d2b36b]">Spotlight</p><h3 className="mt-1 text-lg font-semibold">Next client</h3></div><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">Deposit verified</span></div>
               <div className="mt-4 rounded-xl border border-[#d2b36b]/15 bg-[#0a0908] p-4 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-[#9d9488]">9:00 AM · Today</p><p className="mt-1 text-xl font-semibold">Arielle Johnson</p><p className="mt-1 text-sm text-[#d2b36b]">Signature Silk Press</p></div><div className="rounded-xl bg-[#d2b36b]/10 px-4 py-3 text-center"><p className="text-[10px] uppercase tracking-wider text-[#bca16b]">Starts in</p><p className="mt-1 text-lg font-semibold text-[#e9ce8c]">24 min</p></div></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-[#9d9488]">Demo time · Today</p><p className="mt-1 text-xl font-semibold">Sample Client A</p><p className="mt-1 text-sm text-[#d2b36b]">Signature Silk Press</p></div><div className="rounded-xl bg-[#d2b36b]/10 px-4 py-3 text-center"><p className="text-[10px] uppercase tracking-wider text-[#bca16b]">Demo countdown</p><p className="mt-1 text-lg font-semibold text-[#e9ce8c]">—</p></div></div>
                 <div className="mt-4 grid grid-cols-2 gap-3 text-xs"><div className="rounded-lg bg-white/[.035] p-3"><p className="text-[#91887c]">Duration</p><p className="mt-1 text-sm text-[#e9e2d5]">2 hours</p></div><div className="rounded-lg bg-white/[.035] p-3"><p className="text-[#91887c]">Deposit</p><p className="mt-1 text-sm text-emerald-200">$25 · Verified</p></div></div>
               </div>
-              <p className="mt-3 text-xs text-[#91887c]">Illustrative information only — not real client or booking data.</p>
+              <p className="mt-3 text-xs text-[#91887c]">All names, counts, appointments, deposits, and chart values are fictional demo content.</p>
             </div>
             <div className="rounded-2xl border border-[#d2b36b]/15 bg-[#12100d] p-4 sm:p-5">
               <div className="flex items-center justify-between"><div><p className="text-xs uppercase tracking-[.17em] text-[#d2b36b]">At a glance</p><h3 className="mt-1 text-lg font-semibold">Booking activity</h3></div><span className="text-xs text-[#8e857a]">Demo week</span></div>
