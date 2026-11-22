@@ -8,22 +8,31 @@ type Appointment = {
 };
 type Closure = { id: string; closed_date: string; reason: string | null };
 
+const SALON_TIME_ZONE = "America/New_York";
 const dayKey = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
   return y + "-" + m + "-" + d;
 };
+const todayInSalon = () => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: SALON_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((part) => part.type === type)?.value || "";
+  return get("year") + "-" + get("month") + "-" + get("day");
+};
+const dateFromKey = (key: string) => new Date(key + "T00:00:00.000Z");
 const localDay = (iso: string) => new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit",
+  timeZone: SALON_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit",
 }).format(new Date(iso));
 const clock = (iso: string) => new Intl.DateTimeFormat("en-US", {
-  timeZone: "America/New_York", hour: "numeric", minute: "2-digit",
+  timeZone: SALON_TIME_ZONE, hour: "numeric", minute: "2-digit",
 }).format(new Date(iso));
 
 export default function AdminCalendar({ appointments }: { appointments: Appointment[] }) {
-  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [selected, setSelected] = useState(() => dayKey(new Date()));
+  const [month, setMonth] = useState(() => dateFromKey(todayInSalon().slice(0, 7) + "-01"));
+  const [selected, setSelected] = useState(() => todayInSalon());
   const [closures, setClosures] = useState<Closure[]>([]);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,9 +54,9 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
   useEffect(() => { void loadClosures(); }, []);
 
   const monthCells = useMemo(() => {
-    const first = new Date(month.getFullYear(), month.getMonth(), 1);
-    const offset = first.getDay();
-    return Array.from({ length: 42 }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i - offset + 1));
+    const first = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1));
+    const offset = first.getUTCDay();
+    return Array.from({ length: 42 }, (_, i) => new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), i - offset + 1)));
   }, [month]);
   const selectedAppointments = appointments.filter((a) => localDay(a.starts_at) === selected)
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
@@ -83,13 +92,13 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
 
   return (
     <section className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-      <div className="mb-4"><h2 className="text-xl font-semibold">Appointment calendar</h2><p className="mt-1 text-sm text-[#aaa49a]">Select a day to see its schedule. Close dates for holidays or time away; existing bookings stay on the calendar.</p></div>
+      <div className="mb-4"><h2 className="text-xl font-semibold">Appointment calendar</h2><p className="mt-1 text-sm text-[#aaa49a]">Select a day to see its schedule. Close dates for holidays or time away; existing bookings stay on the calendar. Dates and appointment times use Maryland local time.</p></div>
       <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
-            <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth()-1, 1))} className="rounded-lg border border-[#d7b56d]/30 px-3 py-2" aria-label="Previous month">‹</button>
-            <h3 className="font-semibold">{new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(month)}</h3>
-            <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth()+1, 1))} className="rounded-lg border border-[#d7b56d]/30 px-3 py-2" aria-label="Next month">›</button>
+            <button type="button" onClick={() => setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth()-1, 1)))} className="rounded-lg border border-[#d7b56d]/30 px-3 py-2" aria-label="Previous month">‹</button>
+            <h3 className="font-semibold">{new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(month)}</h3>
+            <button type="button" onClick={() => setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth()+1, 1)))} className="rounded-lg border border-[#d7b56d]/30 px-3 py-2" aria-label="Next month">›</button>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs text-[#aaa49a]">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => <div key={d} className="py-2">{d}</div>)}</div>
           <div className="grid grid-cols-7 gap-1">
@@ -100,9 +109,9 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
               return <button type="button" key={key} onClick={() => setSelected(key)}
                 className={"min-h-12 rounded-lg border p-1 text-sm " +
                   (key === selected ? "border-[#d7b56d] bg-[#d7b56d] text-[#17110a] font-bold " :
-                    date.getMonth() !== month.getMonth() ? "border-transparent text-[#777168] " : "border-white/10 bg-[#0e0c0a] ") +
+                    date.getUTCMonth() !== month.getUTCMonth() ? "border-transparent text-[#777168] " : "border-white/10 bg-[#0e0c0a] ") +
                   (closed && key !== selected ? " ring-1 ring-red-400/60 " : "")}>
-                <span>{date.getDate()}</span>
+                <span>{date.getUTCDate()}</span>
                 <span className="block text-[10px]">{closed ? "Closed" : count ? count + " appt" : " "}</span>
               </button>;
             })}
@@ -110,7 +119,7 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
           <div className="mt-3 flex flex-wrap gap-3 text-xs text-[#aaa49a]"><span>● Appointment count</span><span className="text-red-300">● Closed date</span><span className="text-[#d7b56d]">● Selected day</span></div>
         </div>
         <div className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
-          <h3 className="font-semibold">{new Date(selected + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</h3>
+          <h3 className="font-semibold">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(dateFromKey(selected))}</h3>
           <p className="mb-3 mt-1 text-sm text-[#aaa49a]">{selectedAppointments.length} appointment(s) · Maryland local time</p>
           {selectedAppointments.length ? <div className="mb-4 space-y-2">{selectedAppointments.map((a) => <article key={a.id} className="rounded-lg border border-white/10 p-3 text-sm"><div className="flex flex-wrap justify-between gap-2"><strong>{a.customer_name}</strong><span className="text-[#d7b56d]">{clock(a.starts_at)}–{clock(a.ends_at)}</span></div><p className="text-[#aaa49a]">{a.service}</p><p className="text-xs text-[#aaa49a]">{a.status} · Deposit: {a.deposit_status}</p></article>)}</div> : <p className="mb-4 text-sm text-[#aaa49a]">No appointments scheduled for this day.</p>}
           {selectedClosure ? <div className="mb-3 rounded-lg border border-red-400/30 bg-red-950/20 p-3 text-sm text-red-200">Closed for new bookings{selectedClosure.reason ? ": " + selectedClosure.reason : "."}</div> : <div className="mb-3"><label className="mb-1 block text-xs text-[#aaa49a]" htmlFor="closure-reason">Reason (optional)</label><input id="closure-reason" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={120} placeholder="Holiday, vacation, personal day…" className="w-full rounded-lg border border-white/15 bg-[#17130f] px-3 py-2 text-sm" /></div>}
