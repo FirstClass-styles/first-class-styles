@@ -316,7 +316,9 @@ document.querySelectorAll(".service-btn").forEach(btn=>btn.addEventListener("cli
 
 document.querySelectorAll("[data-lightbox]").forEach(fig=>fig.addEventListener("click",()=>{document.getElementById("lightboxImg").src=fig.dataset.lightbox;openOverlay("lightboxOverlay")}));
 
-let viewDate=new Date();let selectedDate=null;
+const initialSalonDateParts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+const initialSalonDate=Object.fromEntries(initialSalonDateParts.map(p=>[p.type,p.value]));
+let viewDate=new Date(Number(initialSalonDate.year),Number(initialSalonDate.month)-1,Number(initialSalonDate.day));let selectedDate=null;
 let liveAppointments=[];
 const monthTitle=document.getElementById("monthTitle"),daysEl=document.getElementById("calendarDays"),selectedEl=document.getElementById("selectedDate");
 const timeSelect=document.getElementById("time");
@@ -386,7 +388,7 @@ async function loadAvailability(){
 }
 function renderCalendar(){
  const y=viewDate.getFullYear(),m=viewDate.getMonth();monthTitle.textContent=new Intl.DateTimeFormat("en-US",{month:"long",year:"numeric"}).format(viewDate);daysEl.innerHTML="";
- const first=new Date(y,m,1),last=new Date(y,m+1,0),start=first.getDay(),today=new Date();today.setHours(0,0,0,0);
+ const first=new Date(y,m,1),last=new Date(y,m+1,0),start=first.getDay(),todayParts=nyParts(new Date()),today=new Date(Number(todayParts.year),Number(todayParts.month)-1,Number(todayParts.day));
  for(let i=0;i<42;i++){
   const n=i-start+1,d=new Date(y,m,n),cell=document.createElement("button");cell.className="day";cell.type="button";cell.textContent=d.getDate();
   if(n<1||n>last.getDate()){cell.classList.add("muted");cell.disabled=true;}
@@ -401,7 +403,7 @@ function renderCalendar(){
 document.getElementById("service").addEventListener("change",refreshTimes);
 document.getElementById("prevMonth").onclick=()=>{viewDate.setMonth(viewDate.getMonth()-1);renderCalendar()};
 document.getElementById("nextMonth").onclick=()=>{viewDate.setMonth(viewDate.getMonth()+1);renderCalendar()};
-document.getElementById("todayBtn").onclick=()=>{viewDate=new Date();renderCalendar()};
+document.getElementById("todayBtn").onclick=()=>{const p=nyParts(new Date());viewDate=new Date(Number(p.year),Number(p.month)-1,Number(p.day));renderCalendar()};
 renderCalendar();refreshTimes();loadAvailability();
 
 function getBookingData(){
