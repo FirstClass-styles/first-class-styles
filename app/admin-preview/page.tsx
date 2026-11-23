@@ -20,12 +20,29 @@ export default function AdminPreviewPage() {
     const parts = new Intl.DateTimeFormat("en-US", {timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
     const get = (t:string) => parts.find(x=>x.type===t)?.value || "01";
     const base = new Date(Number(get("year")),Number(get("month"))-1,Number(get("day")));
-    const at = (n:number,h:number,m=0) => { const d=new Date(Date.UTC(base.getFullYear(),base.getMonth(),base.getDate()+n,h+5,m,0,0)); return d.toISOString(); };
+    // Build sample appointments only on salon-open days (Saturday through Tuesday).
+    const openDates: Date[] = [];
+    for (let step=1; step<=14 && openDates.length<4; step++) {
+      const d = new Date(base.getFullYear(),base.getMonth(),base.getDate()+step);
+      if ([0,1,2,6].includes(d.getDay())) openDates.push(d);
+    }
+    const at = (slot:number,h:number,m=0,duration=60) => {
+      const day=openDates[slot];
+      const start=new Date(Date.UTC(day.getFullYear(),day.getMonth(),day.getDate(),h+5,m,0,0));
+      return start.toISOString();
+    };
+    const start = (slot:number,h:number,m=0) => at(slot,h,m);
+    const end = (slot:number,h:number,m=0,duration=60) => {
+      const day=openDates[slot];
+      const date=new Date(Date.UTC(day.getFullYear(),day.getMonth(),day.getDate(),h+5,m,0,0));
+      date.setUTCMinutes(date.getUTCMinutes()+duration);
+      return date.toISOString();
+    };
     return [
-      {id:"demo-01",customer_name:"Taylor Morgan",customer_phone:"(202) 555-0101",customer_email:"taylor@example.test",service:"Signature Silk Press",starts_at:at(1,10),ends_at:at(1,12),status:"pending_payment",deposit_amount:25,deposit_status:"pending",customer_notes:"Sample note only.",created_at:at(0,9)},
-      {id:"demo-02",customer_name:"Avery Brooks",customer_phone:"(202) 555-0102",customer_email:"avery@example.test",service:"Loc Refresh",starts_at:at(2,9),ends_at:at(2,11),status:"confirmed",deposit_amount:25,deposit_status:"verified",customer_notes:null,created_at:at(0,10)},
-      {id:"demo-03",customer_name:"Jordan Ellis",customer_phone:"(202) 555-0103",customer_email:null,service:"Quick Weave",starts_at:at(3,13),ends_at:at(3,15,30),status:"pending_payment",deposit_amount:25,deposit_status:"pending",customer_notes:null,created_at:at(0,11)},
-      {id:"demo-04",customer_name:"Casey Reed",customer_phone:"(202) 555-0104",customer_email:"casey@example.test",service:"Signature Shampoo & Blow Dry",starts_at:at(4,11),ends_at:at(4,11,45),status:"cancelled",deposit_amount:25,deposit_status:"rejected",customer_notes:"Cancelled sample.",created_at:at(-1,12)}
+      {id:"demo-01",customer_name:"Taylor Morgan",customer_phone:"(202) 555-0101",customer_email:"taylor@example.test",service:"Signature Silk Press",starts_at:start(0,10),ends_at:end(0,10,0,120),status:"pending_payment",deposit_amount:25,deposit_status:"pending",customer_notes:"Sample note only.",created_at:start(0,8)},
+      {id:"demo-02",customer_name:"Avery Brooks",customer_phone:"(202) 555-0102",customer_email:"avery@example.test",service:"Loc Refresh",starts_at:start(1,9),ends_at:end(1,9,0,120),status:"confirmed",deposit_amount:25,deposit_status:"verified",customer_notes:null,created_at:start(0,8,30)},
+      {id:"demo-03",customer_name:"Jordan Ellis",customer_phone:"(202) 555-0103",customer_email:null,service:"Quick Weave",starts_at:start(2,13),ends_at:end(2,13,0,150),status:"pending_payment",deposit_amount:25,deposit_status:"pending",customer_notes:null,created_at:start(0,9)},
+      {id:"demo-04",customer_name:"Casey Reed",customer_phone:"(202) 555-0104",customer_email:"casey@example.test",service:"Signature Shampoo & Blow Dry",starts_at:start(3,11),ends_at:end(3,11,0,45),status:"cancelled",deposit_amount:25,deposit_status:"rejected",customer_notes:"Cancelled sample.",created_at:start(0,9,30)}
     ] as Appointment[];
   }, []);
   const [active,setActive]=useState<Section>("Overview");
