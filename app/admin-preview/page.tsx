@@ -54,7 +54,7 @@ export default function AdminPreviewPage() {
   const [active,setActive]=useState<Section>("Overview");
   const [menuOpen,setMenuOpen]=useState(false);
   const [password,setPassword]=useState("");
-  const [signedIn,setSignedIn]=useState(true);
+  const [signedIn,setSignedIn]=useState(false);
   const [appointments,setAppointments]=useState<Appointment[]>(demoAppointments);
   const [hasMore,setHasMore]=useState(false);
   const [nextOffset,setNextOffset]=useState(0);
