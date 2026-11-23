@@ -187,6 +187,9 @@ export async function POST(request: NextRequest) {
 
     if (insertResponse.status === 409 || insertResponse.status === 400) {
       const detail = await insertResponse.text();
+      if (/salon_daily_booking_limit|four active appointments/i.test(detail)) {
+        return jsonError("The salon has reached its limit of four appointments for that date. Please choose another available date.", 409);
+      }
       if (/prevent_double_booking|exclusion|overlap|23P01/i.test(detail)) {
         return jsonError("That time was just booked. Please choose another available time.", 409);
       }
