@@ -19,6 +19,9 @@ export default function AdminPreviewPage() {
   const [password, setPassword] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -32,10 +35,12 @@ export default function AdminPreviewPage() {
       const response = await fetch("/api/admin", { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) {
-        if (response.status === 401) { setSignedIn(false); setAppointments([]); return; }
+        if (response.status === 401) { setSignedIn(false); setAppointments([]); setHasMore(false); setNextOffset(0); return; }
         throw new Error(data.error || "Could not load salon records.");
       }
       setAppointments(data.appointments || []);
+      setHasMore(Boolean(data.hasMore));
+      setNextOffset(Number(data.offset || 0) + (data.appointments || []).length);
       setSignedIn(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load salon records.");
@@ -43,6 +48,22 @@ export default function AdminPreviewPage() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  async function loadOlderAppointments() {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true); setError("");
+    try {
+      const response = await fetch("/api/admin?offset=" + nextOffset, { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not load older appointments.");
+      const existing = new Set(appointments.map((item) => item.id));
+      const older = (data.appointments || []).filter((item: Appointment) => !existing.has(item.id));
+      setAppointments((current) => [...current, ...older]);
+      setHasMore(Boolean(data.hasMore));
+      setNextOffset(Number(data.offset || nextOffset) + (data.appointments || []).length);
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not load older appointments."); }
+    finally { setLoadingMore(false); }
+  }
 
   async function signIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy("login"); setError("");
@@ -143,7 +164,7 @@ export default function AdminPreviewPage() {
           </>}
           {active==="Appointment Calendar" && <div className="mt-6"><AdminCalendar appointments={appointments}/></div>}
           {active==="Salon Closures" && <div className="mt-6"><AdminCalendar appointments={appointments}/></div>}
-          {(active==="Booking Requests" || active==="Deposits & Payments") && <section className={`mt-6 ${shell}`}><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs uppercase tracking-[.17em] text-[#d2b36b]">{active==="Booking Requests"?"Client requests":"Manual deposit review"}</p><h2 className="mt-1 text-lg font-semibold">{active}</h2></div><select aria-label="Filter appointments" value={filter} onChange={e=>setFilter(e.target.value)} className="rounded-lg border border-[#d2b36b]/30 bg-[#080706] px-3 py-2 text-sm"><option value="all">All records</option><option value="pending">Deposit pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select></div><input type="search" aria-label="Search appointments" placeholder="Search name, phone, email or service…" value={search} onChange={e=>setSearch(e.target.value)} className="mt-4 w-full rounded-xl border border-white/15 bg-[#080706] px-4 py-3 text-sm outline-none focus:border-[#d2b36b]"/><div className="mt-4 space-y-3">{filtered.filter(a=>active==="Deposits & Payments"?a.status!=="cancelled":true).map(a=><AppointmentCard key={a.id} a={a} onAction={act} busy={busy}/>) }{filtered.filter(a=>active==="Deposits & Payments"?a.status!=="cancelled":true).length===0&&<p className="py-8 text-center text-sm text-[#aaa49a]">No records match this view.</p>}</div></section>}
+          {(active==="Booking Requests" || active==="Deposits & Payments") && <section className={`mt-6 ${shell}`}><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs uppercase tracking-[.17em] text-[#d2b36b]">{active==="Booking Requests"?"Client requests":"Manual deposit review"}</p><h2 className="mt-1 text-lg font-semibold">{active}</h2></div><select aria-label="Filter appointments" value={filter} onChange={e=>setFilter(e.target.value)} className="rounded-lg border border-[#d2b36b]/30 bg-[#080706] px-3 py-2 text-sm"><option value="all">All records</option><option value="pending">Deposit pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select></div><input type="search" aria-label="Search appointments" placeholder="Search name, phone, email or service…" value={search} onChange={e=>setSearch(e.target.value)} className="mt-4 w-full rounded-xl border border-white/15 bg-[#080706] px-4 py-3 text-sm outline-none focus:border-[#d2b36b]"/><div className="mt-4 space-y-3">{filtered.filter(a=>active==="Deposits & Payments"?a.status!=="cancelled":true).map(a=><AppointmentCard key={a.id} a={a} onAction={act} busy={busy}/>) }{filtered.filter(a=>active==="Deposits & Payments"?a.status!=="cancelled":true).length===0&&<p className="py-8 text-center text-sm text-[#aaa49a]">No records match this view.</p>}</div>{hasMore&&<button onClick={()=>void loadOlderAppointments()} disabled={loadingMore} className="mt-4 w-full rounded-lg border border-[#d2b36b]/30 px-4 py-3 text-sm text-[#e9ce8c] disabled:opacity-50">{loadingMore?"Loading older records…":"Load older appointments"}</button>}</section>}
           {active==="Clients" && <section className={`mt-6 ${shell}`}><h2 className="text-lg font-semibold">Client directory</h2><p className="mt-1 text-xs text-[#91877c]">Based on the appointment records currently loaded.</p><div className="mt-4 space-y-3">{clients.map(c=><article key={c.phone} className="rounded-xl border border-white/10 bg-[#0a0908] p-4"><div className="flex flex-wrap justify-between gap-2"><strong>{c.name}</strong><span className="text-xs text-[#d2b36b]">{c.visits} booking record(s)</span></div><div className="mt-2 flex flex-wrap gap-4 text-sm"><a className="text-[#e9ce8c] underline" href={"tel:"+c.phone}>{c.phone}</a>{c.email&&<a className="text-[#e9ce8c] underline" href={"mailto:"+c.email}>{c.email}</a>}</div><p className="mt-2 text-xs text-[#91877c]">Latest booking: {dateTime(c.latest)}</p></article>)}{clients.length===0&&<p className="py-8 text-sm text-[#aaa49a]">Client records will appear when bookings are received.</p>}</div></section>}
           {active==="Gallery Management" && <section className={`mt-6 ${shell}`}><h2 className="text-lg font-semibold">Salon photo gallery</h2><p className="mt-2 text-sm text-[#aaa49a]">The public gallery currently uses the five salon photo slots already configured on the website. Upload and replacement controls are not connected to this dashboard yet, so no photo changes can be made here.</p><div className="mt-4 grid gap-3 sm:grid-cols-2">{["gallery-straight-and-curls.jpg","gallery-twist-style.jpg","gallery-blonde-waves.jpg","gallery-curly-style.jpg","gallery-long-layers.jpg"].map((name,i)=><div key={name} className="rounded-xl border border-white/10 bg-[#0a0908] p-3"><p className="text-xs text-[#d2b36b]">Gallery slot {i+1}</p><p className="mt-1 break-all text-sm">{name}</p><p className="mt-1 text-xs text-[#91877c]">Awaiting confirmed original salon photo asset</p></div>)}</div><p className="mt-4 text-xs text-[#d4bd8b]">Reminder: the original photos were sent individually. We will need those original image files again when your attachment capacity is available to complete the real-photo gallery.</p></section>}
           {active==="Settings" && <section className={`mt-6 ${shell}`}><h2 className="text-lg font-semibold">Salon booking settings</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">{[["Opening days","Saturday – Tuesday"],["Opening hours","9:00 AM – 4:00 PM"],["Minimum notice","24 hours"],["Daily booking cap","4 active appointments"],["Deposit","$25 non-refundable"],["Deposit methods","Zelle · Cash App · Apple Pay"],["Remaining balance","Cash at the salon"],["Confirmation rule","Confirmed only after deposit verification"]].map(([k,v])=><div key={k} className="rounded-xl border border-white/10 bg-[#0a0908] p-3"><p className="text-xs text-[#91877c]">{k}</p><p className="mt-1 text-sm font-medium">{v}</p></div>)}</div><p className="mt-4 text-xs text-[#91877c]">These are informational settings; editing controls are not enabled here.</p></section>}
