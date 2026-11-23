@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin-preview
 Disallow: /api
 
 Sitemap: https://first-class-styles.vercel.app/sitemap.xml
