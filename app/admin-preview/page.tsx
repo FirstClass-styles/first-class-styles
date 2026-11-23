@@ -31,8 +31,8 @@ export default function AdminPreviewPage() {
       const target = Date.UTC(day.getFullYear(),day.getMonth(),day.getDate(),h,m,0,0);
       let guess = target;
       for (let i=0;i<3;i++) {
-        const parts = new Intl.DateTimeFormat("en-US", {timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(new Date(guess));
-        const get = (t:string) => Number(parts.find(x=>x.type===t)?.value || "0");
+        const localParts = new Intl.DateTimeFormat("en-US", {timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(new Date(guess));
+        const get = (t:string) => Number(localParts.find(x=>x.type===t)?.value || "0");
         const represented = Date.UTC(get("year"),get("month")-1,get("day"),get("hour"),get("minute"),get("second"));
         guess += target - represented;
       }
