@@ -15,7 +15,7 @@ begin
   salon_day := (new.starts_at at time zone 'America/New_York')::date;
 
   -- Serialize concurrent reservations for the same local salon day.
-  perform pg_advisory_xact_lock(hashtext('first_class_styles_daily_limit')::bigint, hashtext(salon_day::text));
+  perform pg_advisory_xact_lock(hashtext('first_class_styles_daily_limit'), hashtext(salon_day::text));
 
   select count(*) into active_count
   from public.appointments a
