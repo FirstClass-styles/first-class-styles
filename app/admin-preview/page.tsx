@@ -15,12 +15,24 @@ export default function AdminPreviewPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [todayLabel, setTodayLabel] = useState("");
   const [greeting, setGreeting] = useState("Welcome");
+  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 10, 1));
   useEffect(() => {
     const now = new Date();
-    setTodayLabel(now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }));
-    const hour = now.getHours();
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", hour12: false
+    }).formatToParts(now);
+    const part = (type: string) => Number(parts.find((item) => item.type === type)?.value || 0);
+    const salonDate = new Date(part("year"), part("month") - 1, part("day"));
+    setCalendarMonth(new Date(part("year"), part("month") - 1, 1));
+    setTodayLabel(salonDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }));
+    const hour = part("hour");
     setGreeting(hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
   }, []);
+  const calendarYear = calendarMonth.getFullYear();
+  const calendarMonthIndex = calendarMonth.getMonth();
+  const calendarStart = new Date(calendarYear, calendarMonthIndex, 1).getDay();
+  const calendarDays = new Date(calendarYear, calendarMonthIndex + 1, 0).getDate();
+  const calendarCells = [...Array(calendarStart).fill(null), ...Array.from({ length: calendarDays }, (_, index) => index + 1)];
 
   return (
     <main className="min-h-screen bg-[#090807] text-[#f6f1e8]">
@@ -46,13 +58,13 @@ export default function AdminPreviewPage() {
         <section className="min-w-0 flex-1 p-4 sm:p-6 lg:p-9">
           <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d2b36b]/15 pb-6">
             <div className="flex items-center gap-3">
-              <button className="rounded-lg border border-white/10 p-2 text-[#d2b36b] lg:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">☰</button>
+              <button className="rounded-lg border border-white/10 p-2 text-[#d2b36b] lg:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="admin-preview-mobile-nav">☰</button>
               <div><p className="text-[10px] uppercase tracking-[.25em] text-[#d2b36b]">First Class Styles · Private</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{active}</h1></div>
             </div>
             <div className="flex items-center gap-3"><div className="hidden text-right sm:block"><p className="text-sm font-medium">Salon Owner</p><p className="text-xs text-[#999187]">Administrator</p></div><div className="grid h-10 w-10 place-items-center rounded-full border border-[#d2b36b]/35 bg-[#211a10] text-[#e5c77e]">FC</div></div>
           </header>
 
-          {menuOpen && <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-[#d2b36b]/20 bg-[#12100d] p-2 lg:hidden">{nav.map((item) => <button key={item} onClick={() => { setActive(item); setMenuOpen(false); }} className={`rounded-lg p-2 text-left text-xs ${active===item?"bg-[#d2b36b]/15 text-[#f0d59a]":"text-[#b4aca0]"}`}>{item}</button>)}</div>}
+          {menuOpen && <nav id="admin-preview-mobile-nav" aria-label="Dashboard sections" className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-[#d2b36b]/20 bg-[#12100d] p-2 lg:hidden">{nav.map((item) => <button key={item} aria-current={active===item ? "page" : undefined} onClick={() => { setActive(item); setMenuOpen(false); }} className={`rounded-lg p-2 text-left text-xs ${active===item?"bg-[#d2b36b]/15 text-[#f0d59a]":"text-[#b4aca0]"}`}>{item}</button>)}</nav>}
 
           {active === "Overview" ? <>
           <div className="mt-6 rounded-2xl border border-[#d2b36b]/25 bg-gradient-to-r from-[#20190f] via-[#17130f] to-[#100e0b] p-5 sm:p-7">
@@ -120,7 +132,11 @@ function PreviewModule({active,todayLabel}:{active:string;todayLabel:string}) {
  const demo="rounded-xl border border-white/[.06] bg-[#0a0908] p-3";
  return <div className="mt-6 space-y-4">
   <div className="rounded-2xl border border-[#d2b36b]/20 bg-gradient-to-r from-[#20190f] to-[#100e0b] p-5"><p className="text-xs uppercase tracking-[.2em] text-[#d2b36b]">Demo workspace</p><h2 className="mt-2 text-xl font-semibold">{active}</h2><p className="mt-1 text-sm text-[#a99f93]">Preview only · No live data or actions connected.</p></div>
-  {active==="Appointment Calendar"&&<div className={panel}><h3 className="font-semibold">November 2026 · Sample calendar</h3><div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="py-2 text-[#8e857a]">{d}</div>)}{Array.from({length:35},(_,i)=>{const day=i+1;return <div key={i} className={`min-h-12 rounded-lg p-1 text-left ${day<=30?"bg-white/[.025] text-[#e7dfd2]":"text-[#665d53]"}`}>{day<=30?day:""}{[3,7,11,15,19,24].includes(day)&&<span className="mt-1 block rounded bg-[#d2b36b]/15 px-1 text-[8px] text-[#d2b36b]">Demo appt</span>}</div>})}</div></div>}
+  {active==="Appointment Calendar"&&<div className={panel}>
+   <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-semibold">Monthly appointment calendar</h3><p className="mt-1 text-xs text-[#91877c]">Salon time · America/New_York · Demonstration only</p></div><div className="flex items-center gap-2"><button aria-label="Previous month" onClick={()=>setCalendarMonth(new Date(calendarYear,calendarMonthIndex-1,1))} className="rounded-lg border border-white/10 px-3 py-2 text-sm text-[#d2b36b]">←</button><span className="min-w-32 text-center text-sm font-medium">{calendarMonth.toLocaleDateString("en-US",{month:"long",year:"numeric"})}</span><button aria-label="Next month" onClick={()=>setCalendarMonth(new Date(calendarYear,calendarMonthIndex+1,1))} className="rounded-lg border border-white/10 px-3 py-2 text-sm text-[#d2b36b]">→</button></div></div>
+   <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="py-2 text-[#8e857a]">{d}</div>)}{calendarCells.map((day,index)=><div key={day ?? `blank-${index}`} className={`min-h-12 rounded-lg p-1 text-left ${day?"bg-white/[.025] text-[#e7dfd2]":"bg-transparent"}`}>{day ?? ""}{day && [3,7,11,15,19,24].includes(day)&&<span className="mt-1 block rounded bg-[#d2b36b]/15 px-1 py-0.5 text-[8px] text-[#d2b36b]">Demo</span>}</div>)}</div>
+   <p className="mt-3 text-xs text-[#91877c]">Demo markers are fictional and will be replaced by live appointments after secure integration.</p>
+  </div>}
   {active==="Booking Requests"&&<div className={panel}><h3 className="font-semibold">Fictional booking requests</h3><div className="mt-3 space-y-2">{demoAppointments.map(x=><div key={x.name} className={demo}><p className="font-medium">{x.name} · {x.status}</p><p className="mt-1 text-sm text-[#d2b36b]">{x.service}</p><p className="text-xs text-[#91877c]">{x.time} · {x.duration}</p></div>)}</div></div>}
   {active==="Deposits & Payments"&&<div className={panel}><h3 className="font-semibold">Deposit snapshot · sample figures</h3><div className="mt-3 grid grid-cols-2 gap-3"><div className={demo}><p className="text-xs text-[#9d9488]">Awaiting</p><p className="mt-1 text-xl text-[#e8ca86]">$50</p></div><div className={demo}><p className="text-xs text-[#9d9488]">Verified</p><p className="mt-1 text-xl text-emerald-200">$50</p></div></div><p className="mt-3 text-xs text-[#93897d]">Payments cannot be verified or processed here.</p></div>}
   {active==="Clients"&&<div className={panel}><h3 className="font-semibold">Sample client list</h3><div className="mt-3 space-y-2">{demoAppointments.map(x=><div key={x.name} className={demo}><p className="font-medium">{x.name}</p><p className="mt-1 text-xs text-[#91877c]">Service: {x.service} · Demo profile</p></div>)}</div></div>}
