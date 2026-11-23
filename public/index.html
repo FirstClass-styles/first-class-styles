@@ -184,11 +184,11 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
 <section class="section" id="gallery"><div class="container">
   <div class="section-head"><div><span class="eyebrow">Portfolio</span><h2>Gallery</h2></div><p class="lead">A look at the hairstyles and salon work at First Class Styles.</p></div>
   <div class="grid gallery">
-    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-straight-and-curls.jpg" data-open-label="photo"><img src="/gallery-straight-and-curls.jpg" alt="Straight hairstyle with curls" loading="lazy"><figcaption>Straight &amp; Curls</figcaption></figure>
-    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-twist-style.jpg" data-open-label="photo"><img src="/gallery-twist-style.jpg" alt="Twist hairstyle" loading="lazy"><figcaption>Twist Style</figcaption></figure>
-    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-blonde-waves.jpg" data-open-label="photo"><img src="/gallery-blonde-waves.jpg" alt="Blonde waves hairstyle" loading="lazy"><figcaption>Blonde Waves</figcaption></figure>
-    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-curly-style.jpg" data-open-label="photo"><img src="/gallery-curly-style.jpg" alt="Curly hairstyle" loading="lazy"><figcaption>Curly Style</figcaption></figure>
-    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: "/gallery-long-layers.jpg" data-open-label="photo"><img src="/gallery-long-layers.jpg" alt="Long layered hairstyle" loading="lazy"><figcaption>Long Layers</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: Straight &amp; Curls" data-open-label="photo"><img src="/gallery-straight-and-curls.jpg" alt="Straight hairstyle with curls" loading="lazy"><figcaption>Straight &amp; Curls</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: Twist Style" data-open-label="photo"><img src="/gallery-twist-style.jpg" alt="Twist hairstyle" loading="lazy"><figcaption>Twist Style</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: Blonde Waves" data-open-label="photo"><img src="/gallery-blonde-waves.jpg" alt="Blonde waves hairstyle" loading="lazy"><figcaption>Blonde Waves</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: Curly Style" data-open-label="photo"><img src="/gallery-curly-style.jpg" alt="Curly hairstyle" loading="lazy"><figcaption>Curly Style</figcaption></figure>
+    <figure class="gallery-photo" tabindex="0" role="button" aria-label="Open photo: Long Layers" data-open-label="photo"><img src="/gallery-long-layers.jpg" alt="Long layered hairstyle" loading="lazy"><figcaption>Long Layers</figcaption></figure>
   </div>
 </div></section>
 
@@ -211,10 +211,10 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
     </div>
     <div class="booking-form-card">
       <div class="booking-confirmation" id="bookingConfirmation" role="status" aria-live="polite">
-        <h3>Your appointment is confirmed!</h3>
+        <h3>Your booking request has been received!</h3>
         <p id="confirmationSummary"></p>
-        <p class="confirmation-status">Appointment confirmed. Your $25 non-refundable deposit is still due and has not been marked as paid.</p>
-        <p>Your appointment time is reserved. Pay the $25 non-refundable deposit using Cash App <a href="https://cash.app/$hotgyal128" target="_blank" rel="noopener noreferrer">$hotgyal128</a>, or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Please send payment confirmation to the salon on WhatsApp. The remaining balance is paid in cash at the salon.</p>
+        <p class="confirmation-status">Your request is awaiting salon confirmation. The $25 non-refundable deposit must be verified before your appointment is confirmed.</p>
+        <p>Your requested time is not confirmed until the salon verifies your $25 non-refundable deposit. Pay using Cash App <a href="https://cash.app/$hotgyal128" target="_blank" rel="noopener noreferrer">$hotgyal128</a>, or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Please send payment confirmation to the salon on WhatsApp. The remaining balance is paid in cash at the salon.</p>
         <div class="confirmation-actions"><a class="btn" id="confirmationWhatsApp" href="https://wa.me/12403701128" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a><a class="btn secondary" href="#contact">Salon Contact Details</a></div>
         <p class="confirmation-ref" id="confirmationReference"></p>
       </div>
@@ -225,7 +225,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
         <div class="form-grid"><div class="field"><label for="time">Available start time</label><select id="time" name="time" required disabled><option value="">Choose a date first</option><option value="09:00">9:00 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="12:00">12:00 PM</option></select><p id="timeAvailabilityMessage" class="availability-message" role="status" aria-live="polite" hidden></p></div></div>
         <div class="field"><label for="notes">Notes / hair goals</label><textarea id="notes" name="notes" placeholder="Tell us anything helpful before your appointment."></textarea></div>
         <div class="booking-actions"><button class="btn" type="submit">Submit Booking Request →</button><button class="btn secondary" type="button" id="whatsappBtn">Ask via WhatsApp</button></div>
-        <p class="notice">A $25 non-refundable deposit is required. Your appointment is confirmed when the booking is successfully submitted; the deposit remains due until the salon verifies payment. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner.</p>
+        <p class="notice">A $25 non-refundable deposit is required. Submitting this form sends a booking request; your appointment is confirmed only after the salon verifies the deposit. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner.</p>
       </form>
     </div>
   </div>
@@ -237,7 +237,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
     <details class="faq-item"><summary>What days is the salon open?</summary><p>First Class Styles is open Saturday through Tuesday, 9 AM–4 PM. The salon is closed Wednesday through Friday.</p></details>
     <details class="faq-item"><summary>How far ahead should I book?</summary><p>Please submit your appointment request at least 24 hours before your preferred start time. Available dates and times are shown in the booking calendar.</p></details>
     <details class="faq-item"><summary>How long is an appointment?</summary><p>Appointment length depends on the selected service. Choose your service to see start times that fit within salon hours.</p></details>
-    <details class="faq-item"><summary>Is a deposit required?</summary><p>Yes. A $25 non-refundable deposit is required. Your appointment is confirmed when your booking is successfully submitted. The deposit remains due until the salon verifies payment.</p></details>
+    <details class="faq-item"><summary>Is a deposit required?</summary><p>Yes. A $25 non-refundable deposit is required. Your booking remains a request until the salon verifies the deposit and confirms the appointment.</p></details>
     <details class="faq-item"><summary>How do I pay the deposit?</summary><p>Pay the $25 non-refundable deposit using Cash App <a href="https://cash.app/$hotgyal128" target="_blank" rel="noopener noreferrer">$hotgyal128</a>, or Zelle to +1 (240) 370-1128 (recipient: Kemariah). Send payment confirmation to the salon on WhatsApp. The remaining balance is paid in cash at the salon.</p></details>
     <details class="faq-item"><summary>What services are available?</summary><p>Closure Sew-In, Loc Journey, Loc Refresh, Quick Weave, Signature Sew-In with Leave Out, Signature Shampoo & Blow Dry, and Signature Silk Press. Contact the salon for service pricing.</p></details>
     <details class="faq-item"><summary>Where is First Class Styles?</summary><p>3813 Old Silver Hill Rd, Suitland, MD 20746.</p></details>
@@ -316,7 +316,9 @@ document.querySelectorAll(".service-btn").forEach(btn=>btn.addEventListener("cli
 
 document.querySelectorAll("[data-lightbox]").forEach(fig=>fig.addEventListener("click",()=>{document.getElementById("lightboxImg").src=fig.dataset.lightbox;openOverlay("lightboxOverlay")}));
 
-let viewDate=new Date();let selectedDate=null;
+const initialSalonDateParts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+const initialSalonDate=Object.fromEntries(initialSalonDateParts.map(p=>[p.type,p.value]));
+let viewDate=new Date(Number(initialSalonDate.year),Number(initialSalonDate.month)-1,Number(initialSalonDate.day));let selectedDate=null;
 let liveAppointments=[];
 const monthTitle=document.getElementById("monthTitle"),daysEl=document.getElementById("calendarDays"),selectedEl=document.getElementById("selectedDate");
 const timeSelect=document.getElementById("time");
@@ -386,7 +388,7 @@ async function loadAvailability(){
 }
 function renderCalendar(){
  const y=viewDate.getFullYear(),m=viewDate.getMonth();monthTitle.textContent=new Intl.DateTimeFormat("en-US",{month:"long",year:"numeric"}).format(viewDate);daysEl.innerHTML="";
- const first=new Date(y,m,1),last=new Date(y,m+1,0),start=first.getDay(),today=new Date();today.setHours(0,0,0,0);
+ const first=new Date(y,m,1),last=new Date(y,m+1,0),start=first.getDay(),todayParts=nyParts(new Date()),today=new Date(Number(todayParts.year),Number(todayParts.month)-1,Number(todayParts.day));
  for(let i=0;i<42;i++){
   const n=i-start+1,d=new Date(y,m,n),cell=document.createElement("button");cell.className="day";cell.type="button";cell.textContent=d.getDate();
   if(n<1||n>last.getDate()){cell.classList.add("muted");cell.disabled=true;}
@@ -401,7 +403,7 @@ function renderCalendar(){
 document.getElementById("service").addEventListener("change",refreshTimes);
 document.getElementById("prevMonth").onclick=()=>{viewDate.setMonth(viewDate.getMonth()-1);renderCalendar()};
 document.getElementById("nextMonth").onclick=()=>{viewDate.setMonth(viewDate.getMonth()+1);renderCalendar()};
-document.getElementById("todayBtn").onclick=()=>{viewDate=new Date();renderCalendar()};
+document.getElementById("todayBtn").onclick=()=>{const p=nyParts(new Date());viewDate=new Date(Number(p.year),Number(p.month)-1,Number(p.day));renderCalendar()};
 renderCalendar();refreshTimes();loadAvailability();
 
 function getBookingData(){
