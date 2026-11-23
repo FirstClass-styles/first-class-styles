@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return jsonError("Please enter a valid email address.");
     }
-    if (!(service in serviceDurations)) return jsonError("Please choose one of the listed salon services.");
+    if (!Object.hasOwn(serviceDurations, service)) return jsonError("Please choose one of the listed salon services.");
     if (!validDateText(date) || !times.includes(time)) return jsonError("Please choose an available date and start time.");
     const durationMinutes = serviceDurations[service];
     if (notes.length > 1500) return jsonError("Please shorten your appointment notes.");
