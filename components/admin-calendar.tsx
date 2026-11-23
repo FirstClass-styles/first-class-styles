@@ -30,7 +30,7 @@ const clock = (iso: string) => new Intl.DateTimeFormat("en-US", {
   timeZone: SALON_TIME_ZONE, hour: "numeric", minute: "2-digit",
 }).format(new Date(iso));
 
-export default function AdminCalendar({ appointments, mode = "calendar" }: { appointments: Appointment[]; mode?: "calendar" | "closures" }) {
+export default function AdminCalendar({ appointments, mode = "calendar", previewMode = false }: { appointments: Appointment[]; mode?: "calendar" | "closures"; previewMode?: boolean }) {
   const [month, setMonth] = useState(() => dateFromKey(todayInSalon().slice(0, 7) + "-01"));
   const [selected, setSelected] = useState(() => todayInSalon());
   const [closures, setClosures] = useState<Closure[]>([]);
@@ -41,6 +41,7 @@ export default function AdminCalendar({ appointments, mode = "calendar" }: { app
   const closureDates = useMemo(() => new Set(closures.map((c) => c.closed_date)), [closures]);
 
   async function loadClosures() {
+    if (previewMode) { setLoading(false); return; }
     setLoading(true);
     try {
       const response = await fetch("/api/admin/closures", { cache: "no-store" });
@@ -51,7 +52,7 @@ export default function AdminCalendar({ appointments, mode = "calendar" }: { app
       setMessage(e instanceof Error ? e.message : "Could not load closed dates.");
     } finally { setLoading(false); }
   }
-  useEffect(() => { void loadClosures(); }, []);
+  useEffect(() => { void loadClosures(); }, [previewMode]);
 
   const monthCells = useMemo(() => {
     const first = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1));
@@ -66,6 +67,7 @@ export default function AdminCalendar({ appointments, mode = "calendar" }: { app
     if (selectedAppointments.some((a) => a.status !== "cancelled") &&
         !window.confirm("There are existing appointments on this date. Closing it will NOT cancel them. Continue?")) return;
     setBusy(true); setMessage("");
+    if (previewMode) { setClosures((current) => [...current, { id: "demo-closure-" + selected, closed_date: selected, reason: reason || "Demo closure" }]); setMessage("Sample date closed locally. No live availability changed."); setReason(""); setBusy(false); return; }
     try {
       const response = await fetch("/api/admin/closures", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -81,8 +83,9 @@ export default function AdminCalendar({ appointments, mode = "calendar" }: { app
   async function reopenDate() {
     if (!selectedClosure || !window.confirm("Reopen this date for new bookings?")) return;
     setBusy(true); setMessage("");
+    if (previewMode) { setClosures((current) => current.filter((c) => c.id !== selectedClosure.id)); setMessage("Sample date reopened locally. No live availability changed."); setBusy(false); return; }
     try {
-      const response = await fetch("/api/admin/closures?id=" + encodeURIComponent(selectedClosure.id), { method: "DELETE" });
+      const response = await fetch("/api/admin/closures?id=" + encodeURIComponent(selectedClosure.id), method: "DELETE" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not reopen date.");
       setMessage("Date reopened for new bookings."); await loadClosures();
@@ -92,7 +95,7 @@ export default function AdminCalendar({ appointments, mode = "calendar" }: { app
 
   return (
     <section className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-      <div className="mb-4"><p className="text-[10px] uppercase tracking-[.18em] text-[#d7b56d]">{mode === "closures" ? "Availability management" : "Daily schedule"}</p><h2 className="mt-1 text-xl font-semibold">{mode === "closures" ? "Salon closures & time off" : "Appointment calendar"}</h2><p className="mt-1 text-sm text-[#aaa49a]">{mode === "closures" ? "Block dates for holidays, vacations or personal time. Reopening a date makes it available for new booking requests again." : "Select a day to review appointments and manage the salon's availability. Existing appointments stay on the calendar when a date is closed."} Dates and appointment times use Maryland local time.</p></div>
+      {previewMode && <div className="mb-3 rounded-lg border border-amber-400/40 bg-amber-950/20 px-3 py-2 text-xs font-semibold text-amber-200">DEMO · SAMPLE DATA · NO LIVE RECORDS OR CLOSURE CHANGES</div>}<div className="mb-4"><p className="text-[10px] uppercase tracking-[.18em] text-[#d7b56d]">{mode === "closures" ? "Availability management" : "Daily schedule"}</p><h2 className="mt-1 text-xl font-semibold">{mode === "closures" ? "Salon closures & time off" : "Appointment calendar"}</h2><p className="mt-1 text-sm text-[#aaa49a]">{mode === "closures" ? "Block dates for holidays, vacations or personal time. Reopening a date makes it available for new booking requests again." : "Select a day to review appointments and manage the salon's availability. Existing appointments stay on the calendar when a date is closed."} Dates and appointment times use Maryland local time.</p></div>
       <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
