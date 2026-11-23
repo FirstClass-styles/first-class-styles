@@ -85,7 +85,7 @@ export default function AdminCalendar({ appointments, mode = "calendar", preview
     setBusy(true); setMessage("");
     if (previewMode) { setClosures((current) => current.filter((c) => c.id !== selectedClosure.id)); setMessage("Sample date reopened locally. No live availability changed."); setBusy(false); return; }
     try {
-      const response = await fetch("/api/admin/closures?id=" + encodeURIComponent(selectedClosure.id), method: "DELETE" });
+      const response = await fetch("/api/admin/closures?id=" + encodeURIComponent(selectedClosure.id), { method: "DELETE" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not reopen date.");
       setMessage("Date reopened for new bookings."); await loadClosures();
