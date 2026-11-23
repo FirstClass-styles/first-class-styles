@@ -177,7 +177,8 @@ export async function GET(request: NextRequest) {
 
       try {
         // Track each recipient separately. If one delivery succeeds and the other fails,
-        // the next hourly run retries only the recipient that has not been recorded as sent.
+        // the next eligible run retries only the recipient that has not been recorded as sent.
+        // A provider-send success followed by a database-write failure is inherently uncertain.
         if (!appointment.owner_reminder_sent_at) {
           await sendEmail(OWNER_EMAIL, "Tomorrow's confirmed appointment — " + appointment.customer_name, ownerMessage);
           const ownerMark = await database("appointments?id=eq." + encodeURIComponent(appointment.id) + "&owner_reminder_sent_at=is.null", {
@@ -212,11 +213,10 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error("Reminder send or status recording failed.");
         failures.push("email send or status update failed");
-        // Release the claim so the next scheduled run can retry.
-        await database("appointments?id=eq." + encodeURIComponent(appointment.id) + "&reminder_sent_at=is.null", {
-          method: "PATCH",
-          body: JSON.stringify({ reminder_claimed_at: null }),
-        }).catch((releaseError) => console.error("Could not release reminder claim."));
+        // Keep the claim after an uncertain delivery/status failure. Releasing it immediately
+        // could let another overlapping run resend an email before the claim window expires.
+        // A stale claim is recovered by the scheduled job after 30 minutes; this is still
+        // best-effort, since the email provider does not expose an idempotency key here.
       }
     }
 
