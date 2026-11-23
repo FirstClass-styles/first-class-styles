@@ -30,7 +30,7 @@ const clock = (iso: string) => new Intl.DateTimeFormat("en-US", {
   timeZone: SALON_TIME_ZONE, hour: "numeric", minute: "2-digit",
 }).format(new Date(iso));
 
-export default function AdminCalendar({ appointments }: { appointments: Appointment[] }) {
+export default function AdminCalendar({ appointments, mode = "calendar" }: { appointments: Appointment[]; mode?: "calendar" | "closures" }) {
   const [month, setMonth] = useState(() => dateFromKey(todayInSalon().slice(0, 7) + "-01"));
   const [selected, setSelected] = useState(() => todayInSalon());
   const [closures, setClosures] = useState<Closure[]>([]);
@@ -92,12 +92,12 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
 
   return (
     <section className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-      <div className="mb-4"><h2 className="text-xl font-semibold">Appointment calendar</h2><p className="mt-1 text-sm text-[#aaa49a]">Select a day to see its schedule. Close dates for holidays or time away; existing bookings stay on the calendar. Dates and appointment times use Maryland local time.</p></div>
+      <div className="mb-4"><p className="text-[10px] uppercase tracking-[.18em] text-[#d7b56d]">{mode === "closures" ? "Availability management" : "Daily schedule"}</p><h2 className="mt-1 text-xl font-semibold">{mode === "closures" ? "Salon closures & time off" : "Appointment calendar"}</h2><p className="mt-1 text-sm text-[#aaa49a]">{mode === "closures" ? "Block dates for holidays, vacations or personal time. Reopening a date makes it available for new booking requests again." : "Select a day to review appointments and manage the salon's availability. Existing appointments stay on the calendar when a date is closed."} Dates and appointment times use Maryland local time.</p></div>
       <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
             <button type="button" onClick={() => setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth()-1, 1)))} className="rounded-lg border border-[#d7b56d]/30 px-3 py-2" aria-label="Previous month">‹</button>
-            <h3 className="font-semibold">{new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(month)}</h3>
+            <div className="flex items-center gap-2"><h3 className="font-semibold">{new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(month)}</h3><button type="button" onClick={() => { const today = todayInSalon(); setMonth(dateFromKey(today.slice(0, 7) + "-01")); setSelected(today); }} className="rounded-lg border border-[#d7b56d]/30 px-2 py-1 text-xs text-[#e9ce8c]">Today</button></div>
             <button type="button" onClick={() => setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth()+1, 1)))} className="rounded-lg border border-[#d7b56d]/30 px-3 py-2" aria-label="Next month">›</button>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs text-[#aaa49a]">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d) => <div key={d} className="py-2">{d}</div>)}</div>
@@ -107,7 +107,7 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
               const count = appointments.filter((a) => localDay(a.starts_at) === key && a.status !== "cancelled").length;
               const closed = closureDates.has(key);
               return <button type="button" key={key} onClick={() => setSelected(key)}
-                className={"min-h-12 rounded-lg border p-1 text-sm " +
+                aria-label={new Intl.DateTimeFormat("en-US", { timeZone: "UTC", dateStyle: "full" }).format(date) + (closed ? ", closed" : count ? ", " + count + " appointments" : "")} className={"min-h-12 rounded-lg border p-1 text-sm " +
                   (key === selected ? "border-[#d7b56d] bg-[#d7b56d] text-[#17110a] font-bold " :
                     date.getUTCMonth() !== month.getUTCMonth() ? "border-transparent text-[#777168] " : "border-white/10 bg-[#0e0c0a] ") +
                   (closed && key !== selected ? " ring-1 ring-red-400/60 " : "")}>
