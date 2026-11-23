@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://first-class-styles.vercel.app/</loc>
+    <lastmod>2026-11-23</lastmod>
+    <image:image>
+      <image:loc>https://first-class-styles.vercel.app/gallery-straight-and-curls.jpg</image:loc>
+      <image:title>First Class Styles salon hair gallery – straight and curls</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://first-class-styles.vercel.app/gallery-twist-style.jpg</image:loc>
+      <image:title>First Class Styles salon hair gallery – twist style</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://first-class-styles.vercel.app/gallery-blonde-waves.jpg</image:loc>
+      <image:title>First Class Styles salon hair gallery – blonde waves</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://first-class-styles.vercel.app/gallery-curly-style.jpg</image:loc>
+      <image:title>First Class Styles salon hair gallery – curly style</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://first-class-styles.vercel.app/gallery-long-layers.jpg</image:loc>
+      <image:title>First Class Styles salon hair gallery – long layers</image:title>
+    </image:image>
   </url>
 </urlset>
