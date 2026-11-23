@@ -15,7 +15,6 @@ export default function AdminPreviewPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [todayLabel, setTodayLabel] = useState("");
   const [greeting, setGreeting] = useState("Welcome");
-  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 10, 1));
   useEffect(() => {
     const now = new Date();
     const parts = new Intl.DateTimeFormat("en-US", {
@@ -23,17 +22,10 @@ export default function AdminPreviewPage() {
     }).formatToParts(now);
     const part = (type: string) => Number(parts.find((item) => item.type === type)?.value || 0);
     const salonDate = new Date(part("year"), part("month") - 1, part("day"));
-    setCalendarMonth(new Date(part("year"), part("month") - 1, 1));
     setTodayLabel(salonDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }));
     const hour = part("hour");
     setGreeting(hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
   }, []);
-  const calendarYear = calendarMonth.getFullYear();
-  const calendarMonthIndex = calendarMonth.getMonth();
-  const calendarStart = new Date(calendarYear, calendarMonthIndex, 1).getDay();
-  const calendarDays = new Date(calendarYear, calendarMonthIndex + 1, 0).getDate();
-  const calendarCells = [...Array(calendarStart).fill(null), ...Array.from({ length: calendarDays }, (_, index) => index + 1)];
-
   return (
     <main className="min-h-screen bg-[#090807] text-[#f6f1e8]">
       <div className="pointer-events-none fixed inset-0 opacity-[0.035]" style={{ backgroundImage: "radial-gradient(#e4c477 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
@@ -128,6 +120,17 @@ function QuickAction({title,description,onClick}:{title:string;description:strin
 }
 
 function PreviewModule({active,todayLabel}:{active:string;todayLabel:string}) {
+ const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 10, 1));
+ useEffect(() => {
+   const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "numeric" }).formatToParts(new Date());
+   const part = (type: string) => Number(parts.find((item) => item.type === type)?.value || 0);
+   setCalendarMonth(new Date(part("year"), part("month") - 1, 1));
+ }, []);
+ const calendarYear = calendarMonth.getFullYear();
+ const calendarMonthIndex = calendarMonth.getMonth();
+ const calendarStart = new Date(calendarYear, calendarMonthIndex, 1).getDay();
+ const calendarDays = new Date(calendarYear, calendarMonthIndex + 1, 0).getDate();
+ const calendarCells: (number | null)[] = [...Array(calendarStart).fill(null), ...Array.from({ length: calendarDays }, (_, index) => index + 1)];
  const panel="rounded-2xl border border-[#d2b36b]/15 bg-[#12100d] p-4 sm:p-5";
  const demo="rounded-xl border border-white/[.06] bg-[#0a0908] p-3";
  return <div className="mt-6 space-y-4">
