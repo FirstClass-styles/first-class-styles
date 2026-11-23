@@ -20,7 +20,7 @@ export default function AdminPreviewPage() {
     const parts = new Intl.DateTimeFormat("en-US", {timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
     const get = (t:string) => parts.find(x=>x.type===t)?.value || "01";
     const base = new Date(Number(get("year")),Number(get("month"))-1,Number(get("day")));
-    const at = (n:number,h:number,m=0) => { const d=new Date(base); d.setDate(d.getDate()+n); d.setHours(h,m,0,0); return d.toISOString(); };
+    const at = (n:number,h:number,m=0) => { const d=new Date(Date.UTC(base.getFullYear(),base.getMonth(),base.getDate()+n,h+5,m,0,0)); return d.toISOString(); };
     return [
       {id:"demo-01",customer_name:"Taylor Morgan",customer_phone:"(202) 555-0101",customer_email:"taylor@example.test",service:"Signature Silk Press",starts_at:at(1,10),ends_at:at(1,12),status:"pending_payment",deposit_amount:25,deposit_status:"pending",customer_notes:"Sample note only.",created_at:at(0,9)},
       {id:"demo-02",customer_name:"Avery Brooks",customer_phone:"(202) 555-0102",customer_email:"avery@example.test",service:"Loc Refresh",starts_at:at(2,9),ends_at:at(2,11),status:"confirmed",deposit_amount:25,deposit_status:"verified",customer_notes:null,created_at:at(0,10)},
@@ -106,7 +106,7 @@ export default function AdminPreviewPage() {
       <Brand /><p className="mt-8 text-xs uppercase tracking-[.2em] text-[#d2b36b]">DEMO · SAMPLE DATA · NO LIVE RECORDS</p>
       <h1 className="mt-2 text-2xl font-semibold">Sign in to continue</h1>
       <p className="mt-2 text-sm text-[#aaa49a]">This is a demo-only dashboard. No password or live records are used.</p>
-      <form onSubmit={signIn} className="mt-6 space-y-3"><label htmlFor="dashboard-password" className="block text-sm">Admin password</label><input id="dashboard-password" type="password" autoComplete="current-password" required value={password} onChange={(e)=>setPassword(e.target.value)} className="w-full rounded-xl border border-[#d2b36b]/30 bg-[#080706] px-4 py-3 outline-none focus:border-[#d2b36b]" /><button disabled={busy==="login"} className="w-full rounded-xl bg-[#d2b36b] px-4 py-3 font-semibold text-[#17110a] disabled:opacity-50">{busy==="login"?"Signing in…":"Open private dashboard"}</button></form>
+      <button type="button" onClick={()=>setSignedIn(true)} className="mt-6 w-full rounded-xl bg-[#d2b36b] px-4 py-3 font-semibold text-[#17110a]">Enter demo dashboard</button>
       {error && <p role="alert" className="mt-4 text-sm text-red-300">{error}</p>}
       <a href="/admin" className="mt-5 inline-block text-sm text-[#d2b36b] underline">Open original admin dashboard</a>
       <p className="mt-6 text-xs text-[#82796e]">Demo mode only: sample data, local actions, no live records.</p>
