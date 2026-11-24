@@ -141,7 +141,11 @@ export async function PATCH(request: NextRequest) {
       id: "eq." + body.id,
       ...(body.action === "verify_deposit" || body.action === "reject_deposit"
         ? { status: "eq.pending_payment", deposit_status: "eq.pending" }
-        : {}),
+        : body.action === "cancel" || body.action === "cancel_test"
+          ? { status: "in.(pending_payment,confirmed)" }
+          : body.action === "mark_test"
+              ? { status: "eq.cancelled" }
+              : {}),
       select: "id,status,deposit_status",
     });
     const response = await database("appointments?" + query.toString(), {
