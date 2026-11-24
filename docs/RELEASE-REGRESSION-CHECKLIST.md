@@ -14,7 +14,7 @@ Use this checklist against an isolated preview/staging database only. Do not cre
 - [ ] Customer and salon notification outcomes are reported as sent/partial failure without undoing the saved booking.
 
 ## Capacity and conflict protection
-- [ ] Five-minute? No—verify the configured rate limit: 5 booking submissions per 10 minutes per client key; excess requests return 429 and Retry-After.
+- [ ] Verify the configured rate limit: 5 booking submissions per 10 minutes per client key; excess requests return 429 and Retry-After.
 - [ ] Four active bookings on a Maryland-local date are allowed; a fifth is rejected.
 - [ ] Two overlapping active appointments cannot be inserted; conflict response says the time is unavailable.
 - [ ] Cancelling/rejecting a pending booking releases its slot.
