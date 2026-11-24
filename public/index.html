@@ -431,7 +431,7 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   summary.textContent=d.service+" · "+prettyDate+" at "+prettyTime+" · "+durationLabel(selectedDuration());
   const message="Hello First Class Styles! I submitted an appointment request and am sending my $25 deposit payment confirmation.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nAppointment date: "+prettyDate+"\nAppointment time: "+prettyTime+"\nPayment method: ";
   whatsapp.href="https://wa.me/"+BUSINESS_WHATSAPP+"?text="+encodeURIComponent(message);
-  reference.textContent="Appointment request received — NOT YET CONFIRMED. Your selected time is temporarily reserved while the salon verifies your $25 deposit. Your appointment is confirmed only after the salon verifies the deposit. Use the payment details above and send your payment confirmation by WhatsApp.";
+  reference.textContent="Appointment request received — NOT YET CONFIRMED. Your selected time is temporarily reserved while the salon verifies your $25 deposit. Your appointment is confirmed only after the salon verifies the deposit. Contact the salon on WhatsApp at +1 (240) 370-1128 for current payment instructions before sending payment. Send your payment confirmation by WhatsApp. Your appointment is confirmed only after the salon verifies the deposit.";
   confirmation.classList.add("show");
   confirmation.scrollIntoView({behavior:"smooth",block:"center"});
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
