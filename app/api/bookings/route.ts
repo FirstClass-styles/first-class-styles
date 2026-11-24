@@ -108,6 +108,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    // Honeypot field: real clients leave this hidden field blank; simple bots often fill every input.
+    if (typeof body.website === "string" && body.website.trim()) return jsonError("Invalid booking request.", 400);
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
