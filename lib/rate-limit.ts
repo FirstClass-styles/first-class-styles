@@ -7,8 +7,10 @@ const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 export type RateLimitResult = { allowed: boolean; retryAfterSeconds: number };
 
 function clientAddress(request: NextRequest) {
+  // Prefer the deployment proxy's single client-IP header; forwarded chains can include user-supplied values.
+  const trustedProxyIp = request.headers.get("x-real-ip")?.trim();
   const forwarded = request.headers.get("x-forwarded-for");
-  const address = forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+  const address = trustedProxyIp || forwarded?.split(",").at(-1)?.trim() || "unknown";
   return address.slice(0, 128);
 }
 
