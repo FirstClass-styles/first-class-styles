@@ -66,6 +66,7 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
   const selectedClosure = closures.find((c) => c.closed_date === selected);
 
   async function closeDate() {
+    if (closureLoadFailed || loading) return;
     if (selectedAppointments.some((a) => a.status !== "cancelled") &&
         !window.confirm("There are existing appointments on this date. Closing it will NOT cancel them. Continue?")) return;
     setBusy(true); setMessage("");
