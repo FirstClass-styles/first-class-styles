@@ -179,7 +179,8 @@ export default function AdminPage() {
         ) : (
           <>
             <section aria-label="Appointment overview" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Total appointments</p><p className="mt-2 text-3xl font-semibold">{appointments.length}</p></div>
+              <p className="col-span-full text-xs text-[#aaa49a]">Dashboard counts reflect the appointment records currently loaded. Use “Load older appointments” below to include more history in these totals.</p>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Appointments loaded</p><p className="mt-2 text-3xl font-semibold">{appointments.length}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Today's appointments</p><p className="mt-2 text-3xl font-semibold">{todayCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Upcoming appointments</p><p className="mt-2 text-3xl font-semibold">{upcomingCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Deposits awaiting verification</p><p className="mt-2 text-3xl font-semibold text-[#f5dc9d]">{pendingCount}</p></div>
