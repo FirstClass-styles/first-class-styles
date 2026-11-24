@@ -146,11 +146,17 @@ export async function PATCH(request: NextRequest) {
     if (body.action === "cancel_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
     if (body.action === "mark_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
 
+    // Recheck the state in the PATCH query itself to prevent stale admin actions
+    // from overwriting a newer status change between lookup and update.
     const query = new URLSearchParams({
       id: "eq." + body.id,
       ...(body.action === "verify_deposit" || body.action === "reject_deposit"
         ? { status: "eq.pending_payment", deposit_status: "eq.pending" }
-        : {}),
+        : body.action === "cancel" || body.action === "cancel_test"
+          ? { status: "in.(pending_payment,confirmed)" }
+          : body.action === "mark_test"
+            ? { status: "eq.cancelled" }
+            : {}),
       select: "id,status,deposit_status",
     });
     const response = await database("appointments?" + query.toString(), {
