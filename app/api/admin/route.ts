@@ -168,7 +168,9 @@ export async function PATCH(request: NextRequest) {
       return replyError("The appointment could not be updated.", 503);
     }
     const rows = await response.json();
-    if (!Array.isArray(rows) || rows.length === 0) return replyError("Appointment not found.", 404);
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return replyError("This appointment changed before the update could be applied. Refresh the dashboard and try again.", 409);
+    }
 
     const changed = previous.status !== rows[0].status || previous.deposit_status !== rows[0].deposit_status;
     let emailNotification: "sent" | "failed" | "not_applicable" = "not_applicable";
