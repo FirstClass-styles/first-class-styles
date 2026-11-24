@@ -110,7 +110,7 @@ export default function AdminCalendar({ appointments, mode = "calendar", preview
               const count = appointments.filter((a) => localDay(a.starts_at) === key && a.status !== "cancelled").length;
               const closed = closureDates.has(key);
               return <button type="button" key={key} onClick={() => setSelected(key)}
-                aria-label={new Intl.DateTimeFormat("en-US", { timeZone: "UTC", dateStyle: "full" }).format(date) + (closed ? ", closed" : count ? ", " + count + " appointments" : "")} className={"min-h-10 sm:min-h-12 rounded-lg border p-1 text-xs sm:text-sm " +
+                aria-label={new Intl.DateTimeFormat("en-US", { timeZone: "UTC", dateStyle: "full" }).format(date) + (closed ? ", closed" : count ? ", " + count + " appointments" : "")} aria-pressed={key === selected} className={"min-h-10 sm:min-h-12 rounded-lg border p-1 text-xs sm:text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#d7b56d] " +
                   (key === selected ? "border-[#d7b56d] bg-[#d7b56d] text-[#17110a] font-bold " :
                     date.getUTCMonth() !== month.getUTCMonth() ? "border-transparent text-[#777168] " : "border-white/10 bg-[#0e0c0a] ") +
                   (closed && key !== selected ? " ring-1 ring-red-400/60 " : "")}>
