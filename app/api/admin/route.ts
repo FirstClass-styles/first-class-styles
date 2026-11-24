@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { bookingDateTime, sendEmail } from "@/lib/email";
 import { adminConfigured, clearAdminSession, sameOrigin, setAdminSession, validAdminSession } from "@/lib/admin-auth";
 import { timingSafeEqual } from "node:crypto";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
 
   if (body.action !== "login" || typeof body.password !== "string" || body.password.length > 200) {
     return replyError("Enter your admin password.");
+  }
+
+  const limit = await consumeRateLimit(request, "admin-login", 10, 15 * 60);
+  if (!limit) return replyError("Login is temporarily unavailable. Please try again later.", 503);
+  if (!limit.allowed) {
+    const response = replyError("Too many login attempts. Please wait before trying again.", 429);
+    response.headers.set("Retry-After", String(limit.retryAfterSeconds));
+    return response;
   }
 
   if (!equalSecret(body.password, process.env.ADMIN_PASSWORD || "")) {
