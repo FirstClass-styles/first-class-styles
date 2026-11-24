@@ -110,12 +110,12 @@ export default function AdminCalendar({ appointments, mode = "calendar", preview
               const count = appointments.filter((a) => localDay(a.starts_at) === key && a.status !== "cancelled").length;
               const closed = closureDates.has(key);
               return <button type="button" key={key} onClick={() => setSelected(key)}
-                aria-label={new Intl.DateTimeFormat("en-US", { timeZone: "UTC", dateStyle: "full" }).format(date) + (closed ? ", closed" : count ? ", " + count + " appointments" : "")} className={"min-h-12 rounded-lg border p-1 text-sm " +
+                aria-label={new Intl.DateTimeFormat("en-US", { timeZone: "UTC", dateStyle: "full" }).format(date) + (closed ? ", closed" : count ? ", " + count + " appointments" : "")} className={"min-h-10 sm:min-h-12 rounded-lg border p-1 text-xs sm:text-sm " +
                   (key === selected ? "border-[#d7b56d] bg-[#d7b56d] text-[#17110a] font-bold " :
                     date.getUTCMonth() !== month.getUTCMonth() ? "border-transparent text-[#777168] " : "border-white/10 bg-[#0e0c0a] ") +
                   (closed && key !== selected ? " ring-1 ring-red-400/60 " : "")}>
                 <span>{date.getUTCDate()}</span>
-                <span className="block text-[10px]">{closed ? "Closed" : count ? count + " appt" : " "}</span>
+                <span className="block text-[9px] leading-tight sm:text-[10px]">{closed ? "Closed" : count ? count + " appt" : " "}</span>
               </button>;
             })}
           </div>
