@@ -36,6 +36,7 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
   const [closures, setClosures] = useState<Closure[]>([]);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
+  const [closureLoadFailed, setClosureLoadFailed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const closureDates = useMemo(() => new Set(closures.map((c) => c.closed_date)), [closures]);
@@ -47,7 +48,9 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load closed dates.");
       setClosures(data.closures || []);
+      setClosureLoadFailed(false);
     } catch (e) {
+      setClosureLoadFailed(true);
       setMessage(e instanceof Error ? e.message : "Could not load closed dates.");
     } finally { setLoading(false); }
   }
@@ -79,7 +82,7 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
     finally { setBusy(false); }
   }
   async function reopenDate() {
-    if (!selectedClosure || !window.confirm("Reopen this date for new bookings?")) return;
+    if (closureLoadFailed || loading || !selectedClosure || !window.confirm("Reopen this date for new bookings?")) return;
     setBusy(true); setMessage("");
     try {
       const response = await fetch("/api/admin/closures?id=" + encodeURIComponent(selectedClosure.id), { method: "DELETE" });
@@ -123,8 +126,9 @@ export default function AdminCalendar({ appointments }: { appointments: Appointm
           <p className="mb-3 mt-1 text-sm text-[#aaa49a]">{selectedAppointments.length} appointment(s) · Maryland local time</p>
           {selectedAppointments.length ? <div className="mb-4 space-y-2">{selectedAppointments.map((a) => <article key={a.id} className="rounded-lg border border-white/10 p-3 text-sm"><div className="flex flex-wrap justify-between gap-2"><strong>{a.customer_name}</strong><span className="text-[#d7b56d]">{clock(a.starts_at)}–{clock(a.ends_at)}</span></div><p className="text-[#aaa49a]">{a.service}</p><p className="text-xs text-[#aaa49a]">{a.status} · Deposit: {a.deposit_status}</p></article>)}</div> : <p className="mb-4 text-sm text-[#aaa49a]">No appointments scheduled for this day.</p>}
           {selectedClosure ? <div className="mb-3 rounded-lg border border-red-400/30 bg-red-950/20 p-3 text-sm text-red-200">Closed for new bookings{selectedClosure.reason ? ": " + selectedClosure.reason : "."}</div> : <div className="mb-3"><label className="mb-1 block text-xs text-[#aaa49a]" htmlFor="closure-reason">Reason (optional)</label><input id="closure-reason" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={120} placeholder="Holiday, vacation, personal day…" className="w-full rounded-lg border border-white/15 bg-[#17130f] px-3 py-2 text-sm" /></div>}
-          {selectedClosure ? <button type="button" disabled={busy} onClick={() => void reopenDate()} className="w-full rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200 disabled:opacity-50">{busy ? "Working…" : "Reopen this date"}</button> : <button type="button" disabled={busy || loading} onClick={() => void closeDate()} className="w-full rounded-lg bg-[#d7b56d] px-3 py-2 text-sm font-bold text-[#17110a] disabled:opacity-50">{busy ? "Working…" : "Close this date to bookings"}</button>}
+          {selectedClosure ? <button type="button" disabled={busy || loading || closureLoadFailed} onClick={() => void reopenDate()} className="w-full rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200 disabled:opacity-50">{busy ? "Working…" : "Reopen this date"}</button> : <button type="button" disabled={busy || loading || closureLoadFailed} onClick={() => void closeDate()} className="w-full rounded-lg bg-[#d7b56d] px-3 py-2 text-sm font-bold text-[#17110a] disabled:opacity-50">{busy ? "Working…" : "Close this date to bookings"}</button>}
           {loading && <p className="mt-2 text-xs text-[#aaa49a]">Loading closure dates…</p>}
+          {closureLoadFailed && <p role="alert" className="mt-2 rounded-md border border-red-400/30 bg-red-950/30 p-2 text-xs text-red-200">Calendar data could not be verified. Date closing and reopening are disabled until the closure list loads successfully. Refresh or try again.</p>}
           {message && <p role="status" className="mt-3 text-sm text-[#f5dc9d]">{message}</p>}
         </div>
       </div>
