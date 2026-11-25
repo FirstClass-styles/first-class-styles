@@ -48,6 +48,15 @@ Use this checklist against an isolated preview/staging database only. Do not cre
 - [ ] Confirm production deployment provides the trusted client-IP header before release.
 - [ ] Plan periodic cleanup for expired rate-limit rows before sustained production traffic.
 
+For a manual cleanup after confirming the migration is applied, run this in the Supabase SQL editor. It removes only rate-limit buckets whose window began more than one day ago; it does not touch appointments or closure dates:
+
+```sql
+DELETE FROM public.rate_limit_buckets
+WHERE window_started_at < now() - interval '1 day';
+```
+
+Do not add a scheduled database job unless the project has a supported scheduler configured and the owner has approved it.
+
 ## Final release gate
 - [ ] Migration applied to intended Supabase project and verified.
 - [ ] Preview uses a safe isolated dataset; no live customer booking/email tests.
