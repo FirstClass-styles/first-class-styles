@@ -87,7 +87,7 @@ export default function AdminPage() {
 
   async function act(id: string, action: string) {
     const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled.", cancel_test: "Test appointment cancelled, marked as test, and customer email suppressed." };
-    if ((action === "cancel" || action === "cancel_test") && !window.confirm(action === "cancel_test" ? "Cancel this fake/test appointment, mark it as a test record, release the time, and suppress cancellation email? Use ONLY for appointments you know are fake." : "Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
+    if ((action === "cancel" || action === "cancel_test" || action === "mark_test") && !window.confirm(action === "cancel_test" ? "Cancel this fake/test appointment, mark it as a test record, release the time, and suppress cancellation email? Use ONLY for appointments you know are fake." : action === "mark_test" ? "Mark this cancelled appointment as a TEST RECORD? Only do this if you are certain it is not a real client record. This enables permanent deletion." : "Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
     if (action === "delete" && !window.confirm("Permanently delete this record? Use only for fake/test appointments. This cannot be undone.")) return;
     setBusy(id); setError(""); setNotice("");
     try {
@@ -197,7 +197,7 @@ export default function AdminPage() {
             </section>
 
             <section aria-label="Client directory" className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the latest 200 appointment records currently loaded.</p></div>
+              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the appointment records currently loaded; load older records to expand this view.</p></div>
               <div className="space-y-3">
                 {clientDirectory.length ? clientDirectory.map((client) => <article key={client.phone.replace(/\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{client.name}</h3><p className="text-xs text-[#aaa49a]">{client.visits} active appointment{client.visits === 1 ? "" : "s"} in records</p></div><span className="text-xs text-[#d7b56d]">Last booking: {dateTime(client.latest)}</span></div>
