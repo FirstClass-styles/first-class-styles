@@ -86,7 +86,7 @@ export default function AdminPage() {
   }
 
   async function act(id: string, action: string) {
-    const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled.", cancel_test: "Test appointment cancelled, marked as test, and customer email suppressed." };
+    const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled.", cancel_test: "Test appointment cancelled, marked as test, and customer email suppressed.", mark_test: "Cancelled appointment marked as a test record." };
     if ((action === "cancel" || action === "cancel_test" || action === "mark_test") && !window.confirm(action === "cancel_test" ? "Cancel this fake/test appointment, mark it as a test record, release the time, and suppress cancellation email? Use ONLY for appointments you know are fake." : action === "mark_test" ? "Mark this cancelled appointment as a TEST RECORD? Only do this if you are certain it is not a real client record. This enables permanent deletion." : "Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
     if (action === "delete" && !window.confirm("Permanently delete this record? Use only for fake/test appointments. This cannot be undone.")) return;
     setBusy(id); setError(""); setNotice("");
