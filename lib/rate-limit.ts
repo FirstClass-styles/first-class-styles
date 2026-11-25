@@ -7,11 +7,10 @@ const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 export type RateLimitResult = { allowed: boolean; retryAfterSeconds: number };
 
 function clientAddress(request: NextRequest) {
-  // Prefer the deployment proxy's single client-IP header; forwarded chains can include user-supplied values.
+  // Trust only the single client-IP header supplied by the hosting proxy.
+  // Never fall back to X-Forwarded-For: its chain may contain user-supplied values.
   const trustedProxyIp = request.headers.get("x-real-ip")?.trim();
-  const forwarded = request.headers.get("x-forwarded-for");
-  const address = trustedProxyIp || forwarded?.split(",").at(-1)?.trim() || "unknown";
-  return address.slice(0, 128);
+  return (trustedProxyIp || "unknown").slice(0, 128);
 }
 
 /** Persistent Supabase/Postgres rate limit. Fails closed when the backing store is unavailable. */
