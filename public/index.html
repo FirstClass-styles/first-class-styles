@@ -221,7 +221,7 @@ footer{border-top:1px solid var(--line);padding:45px 0 calc(30px + env(safe-area
         <div class="form-grid"><div class="field"><label for="time">Available start time</label><select id="time" name="time" required disabled><option value="">Choose a date first</option><option value="09:00">9:00 AM</option><option value="10:00">10:00 AM</option><option value="11:00">11:00 AM</option><option value="12:00">12:00 PM</option></select><p id="timeAvailabilityMessage" class="availability-message" role="status" aria-live="polite" hidden></p></div></div>
         <div class="field"><label for="notes">Notes / hair goals</label><textarea id="notes" name="notes" placeholder="Tell us anything helpful before your appointment."></textarea></div>
         <div class="booking-actions"><button class="btn" type="submit">Submit Booking Request →</button><button class="btn secondary" type="button" id="whatsappBtn">Ask via WhatsApp</button></div>
-        <p class="notice">A $25 non-refundable deposit is required. Submitting this form sends a booking request; your appointment is confirmed only after the salon verifies the deposit. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner.</p>
+        <p class="notice">A $25 non-refundable deposit is required. Submitting this form sends a booking request; your appointment is confirmed only after the salon verifies the deposit. Contact the salon on WhatsApp for current payment instructions. The remaining balance is paid in cash at the salon. Appointment times vary by service and are shown in the booking planner.</p>
       </form>
     </div>
   </div>
@@ -427,7 +427,7 @@ document.getElementById("bookingForm").addEventListener("submit",async e=>{
   summary.textContent=d.service+" · "+prettyDate+" at "+prettyTime+" · "+durationLabel(selectedDuration());
   const message="Hello First Class Styles! I submitted an appointment request and am sending my $25 deposit payment confirmation.\n\nName: "+d.name+"\nPhone: "+d.phone+"\nService: "+d.service+"\nAppointment date: "+prettyDate+"\nAppointment time: "+prettyTime+"\nPayment method: ";
   whatsapp.href="https://wa.me/"+BUSINESS_WHATSAPP+"?text="+encodeURIComponent(message);
-  reference.textContent="Appointment request received — NOT YET CONFIRMED. Your selected time is temporarily reserved while the salon verifies your $25 deposit. Your appointment is confirmed only after the salon verifies the deposit. Contact the salon on WhatsApp at +1 (240) 370-1128 for current payment instructions before sending payment. Send your payment confirmation by WhatsApp. Your appointment is confirmed only after the salon verifies the deposit.";
+  reference.textContent="Appointment request received — NOT YET CONFIRMED. Your selected time is temporarily reserved while the salon verifies your $25 deposit. Contact the salon on WhatsApp at +1 (240) 370-1128 for current payment instructions before sending payment, then send your payment confirmation by WhatsApp.";
   confirmation.classList.add("show");
   confirmation.scrollIntoView({behavior:"smooth",block:"center"});
   form.reset();selectedDate=null;selectedEl.textContent="Select an available date.";timeSelect.innerHTML='<option value="">Choose a date first</option>';
