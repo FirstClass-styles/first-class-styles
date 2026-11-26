@@ -6,17 +6,21 @@ const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 
 export type RateLimitResult = { allowed: boolean; retryAfterSeconds: number };
 
-function clientAddress(request: NextRequest) {
+function clientAddress(request: NextRequest): string | null {
   // Trust only the single client-IP header supplied by the hosting proxy.
   // Never fall back to X-Forwarded-For: its chain may contain user-supplied values.
   const trustedProxyIp = request.headers.get("x-real-ip")?.trim();
-  return (trustedProxyIp || "unknown").slice(0, 128);
+  return trustedProxyIp || null;
 }
 
 /** Persistent Supabase/Postgres rate limit. Fails closed when the backing store is unavailable. */
 export async function consumeRateLimit(request: NextRequest, scope: string, maximum: number, windowSeconds: number): Promise<RateLimitResult | null> {
   if (!SUPABASE_URL || !SUPABASE_KEY) return null;
-  const key = createHash("sha256").update(scope + ":" + clientAddress(request)).digest("hex");
+  const address = clientAddress(request);
+  // If the trusted proxy header is missing, fail closed instead of sharing a
+  // single "unknown" bucket across every visitor.
+  if (!address) return null;
+  const key = createHash("sha256").update(scope + ":" + address).digest("hex");
   try {
     const response = await fetch(SUPABASE_URL + "/rest/v1/rpc/consume_rate_limit", {
       method: "POST", cache: "no-store",
