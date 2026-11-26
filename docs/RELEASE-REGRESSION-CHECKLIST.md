@@ -57,6 +57,41 @@ WHERE window_started_at < now() - interval '1 day';
 
 Do not add a scheduled database job unless the project has a supported scheduler configured and the owner has approved it.
 
+## Database enforcement verification (read-only SQL)
+Run these read-only checks in the intended Supabase project before release. They do not create, update, or delete data.
+
+### 1. Confirm active-overlap exclusion constraint
+```sql
+select conname, contype, pg_get_constraintdef(oid) as definition
+from pg_constraint
+where conrelid = 'public.appointments'::regclass
+  and conname = 'appointments_no_active_time_overlap';
+```
+Expected: one exclusion constraint whose range uses half-open `[)` intervals and whose predicate applies to `pending_payment` and `confirmed`.
+
+### 2. Confirm daily-cap trigger and function
+```sql
+select tgname, pg_get_triggerdef(oid) as definition
+from pg_trigger
+where tgrelid = 'public.appointments'::regclass
+  and not tgisinternal
+  and tgname = 'appointments_salon_daily_limit';
+
+select proname, pg_get_functiondef(oid) as definition
+from pg_proc
+where proname = 'enforce_salon_daily_appointment_limit';
+```
+Expected: the trigger fires before insert or updates to `starts_at` or `status`; function serializes same Maryland-local date reservations and rejects a fifth active record.
+
+### 3. Confirm persistent rate-limit table and RPC
+```sql
+select to_regclass('public.rate_limit_buckets') as rate_limit_table,
+       to_regprocedure('public.consume_rate_limit(text,integer,integer)') as rate_limit_rpc;
+```
+Expected: both identifiers are non-null. Separately confirm the intended migration was applied, and test RPC failure behavior only in isolated staging.
+
+**Do not run concurrent-booking, insert, cancellation, or failure-injection tests against production.** Use isolated staging data only.
+
 ## Final release gate
 - [ ] Migration applied to intended Supabase project and verified.
 - [ ] Preview uses a safe isolated dataset; no live customer booking/email tests.
