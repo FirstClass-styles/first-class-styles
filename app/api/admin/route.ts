@@ -116,7 +116,6 @@ export async function PATCH(request: NextRequest) {
   if (body.action === "verify_deposit") update = { deposit_status: "verified", status: "confirmed" };
   else if (body.action === "reject_deposit") update = { deposit_status: "rejected", status: "cancelled" };
   else if (body.action === "cancel") update = { status: "cancelled" };
-  else if (body.action === "cancel_test") update = { status: "cancelled", customer_notes: "[TEST RECORD]" };
   else if (body.action === "mark_test") update = { customer_notes: "[TEST RECORD]" };
   else return replyError("Choose a valid appointment action.");
 
@@ -142,8 +141,6 @@ export async function PATCH(request: NextRequest) {
       return replyError("Only a booking awaiting its first deposit verification can be rejected here.", 409);
     }
     if (body.action === "mark_test" && previous.status !== "cancelled") return replyError("Cancel the appointment before marking it as a test record.", 409);
-    if (body.action === "cancel_test" && previous.status === "cancelled") return replyError("This appointment is already cancelled.", 409);
-    if (body.action === "cancel_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
     if (body.action === "mark_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
 
     // Recheck the state in the PATCH query itself to prevent stale admin actions
@@ -152,7 +149,7 @@ export async function PATCH(request: NextRequest) {
       id: "eq." + body.id,
       ...(body.action === "verify_deposit" || body.action === "reject_deposit"
         ? { status: "eq.pending_payment", deposit_status: "eq.pending" }
-        : body.action === "cancel" || body.action === "cancel_test"
+        : body.action === "cancel"
           ? { status: "in.(pending_payment,confirmed)" }
           : body.action === "mark_test"
             ? { status: "eq.cancelled" }
@@ -174,7 +171,7 @@ export async function PATCH(request: NextRequest) {
 
     const changed = previous.status !== rows[0].status || previous.deposit_status !== rows[0].deposit_status;
     let emailNotification: "sent" | "failed" | "not_applicable" = "not_applicable";
-    if (changed && previous.customer_email && body.action !== "cancel_test") {
+    if (changed && previous.customer_email) {
       const appointmentTime = bookingDateTime(previous.starts_at);
       let subject = "";
       let message = "";
