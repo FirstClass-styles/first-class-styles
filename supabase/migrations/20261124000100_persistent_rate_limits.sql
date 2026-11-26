@@ -6,6 +6,9 @@ create table if not exists public.rate_limit_buckets (
   request_count integer not null check (request_count >= 1)
 );
 
+-- Enable row-level security in addition to the explicit privilege restrictions.
+alter table public.rate_limit_buckets enable row level security;
+
 revoke all on public.rate_limit_buckets from anon, authenticated, public;
 grant all on public.rate_limit_buckets to service_role;
 
