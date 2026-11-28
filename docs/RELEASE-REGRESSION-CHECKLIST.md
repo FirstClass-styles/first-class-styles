@@ -27,8 +27,8 @@ Use this checklist against an isolated preview/staging database only. Do not cre
 - [ ] Pending + pending deposit can be rejected; status becomes cancelled.
 - [ ] Repeated/stale deposit verification or rejection is blocked with conflict response.
 - [ ] Cancel action only affects an active appointment.
-- [ ] Test-record marking requires a cancelled record.
-- [ ] Test-record cancellation is blocked for already-cancelled records.
+- [ ] Test-record marking requires a cancelled record; mark it separately after cancellation, and only then may permanent deletion be enabled.
+- [ ] Permanent deletion is restricted to cancelled records explicitly marked as test records.
 - [ ] Admin login allows 10 attempts per 15 minutes per client key; excess returns 429 with Retry-After.
 - [ ] Admin logout clears the session.
 - [ ] Expired/invalid admin session cannot access appointment or closure APIs.
