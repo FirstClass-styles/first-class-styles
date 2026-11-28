@@ -110,3 +110,17 @@ Expected: both identifiers are non-null. Separately confirm the intended migrati
 - [ ] Validate partial outcomes: owner delivered/customer failed, customer delivered/owner failed, both delivered, and both failed.
 
 **Known limitation:** Gmail SMTP does not provide an application-level idempotency key for this custom send flow. The app cannot guarantee exactly-once email delivery. A timeout or status-write failure after SMTP acceptance can leave delivery uncertain. A safer implementation should record per-recipient delivery state (including an `uncertain` state) and avoid blind retry for uncertain sends, while offering an owner-visible reconciliation path. This is a design requirement, not a completed code change.
+
+
+## Admin state transitions and slot-release regression (source-reviewed)
+- [ ] Verify deposit on a pending-payment/pending-deposit row succeeds exactly once; repeated verification returns a conflict and does not send a second confirmation email.
+- [ ] Reject deposit on a pending-payment/pending-deposit row cancels it; a later verification attempt is rejected.
+- [ ] Cancel a pending-payment row; a later verify/reject attempt cannot revive it.
+- [ ] Cancel a confirmed row; the time is released and a later cancellation request is rejected.
+- [ ] Verify cancellation/rejection email failures do not undo the persisted status change; check the admin result and logs for the notification outcome.
+- [ ] Simulate two conflicting admin actions in staging (verify vs cancel, reject vs cancel). Confirm conditional status filters prevent stale writes; review email outcome for any race.
+- [ ] Repeated mark-test action on an already marked cancelled row remains safe (prefix is preserved); deletion is still limited to cancelled test rows.
+- [ ] Confirm four-active-per-day capacity is restored after cancellation or rejection; fifth active booking is still rejected until a slot is released.
+- [ ] Confirm moving an active appointment to another date in staging checks the destination date's four-booking cap and overlap rules.
+
+**Source-reviewed behavior:** admin PATCH actions re-read appointment state, then apply a conditional update filtered by the expected current status/deposit state. If no row matches, the API returns 409. Cancellation and deposit rejection set status to cancelled, which removes the appointment from the overlap exclusion constraint and daily active-count trigger. Email is sent after the database status change; a notification failure does not roll back the appointment status. These checks still require isolated staging regression tests.
