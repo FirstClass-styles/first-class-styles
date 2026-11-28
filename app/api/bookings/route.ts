@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bookingDateTime, sendEmail } from "@/lib/email";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -106,6 +107,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const limit = await consumeRateLimit(request, "public-booking", 5, 10 * 60);
+  if (!limit) return jsonError("Online booking is temporarily unavailable. Please try again later or contact the salon.", 503);
+  if (!limit.allowed) {
+    const response = jsonError("Too many booking attempts. Please wait a few minutes and try again.", 429);
+    response.headers.set("Retry-After", String(limit.retryAfterSeconds));
+    return response;
+  }
   try {
     const body = await request.json();
     const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -134,7 +142,7 @@ export async function POST(request: NextRequest) {
     if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return jsonError("Please enter a valid email address.");
     }
-    if (!(service in serviceDurations)) return jsonError("Please choose one of the listed salon services.");
+    if (!Object.prototype.hasOwnProperty.call(serviceDurations, service)) return jsonError("Please choose one of the listed salon services.");
     if (!validDateText(date) || !times.includes(time)) return jsonError("Please choose an available date and start time.");
     const durationMinutes = serviceDurations[service];
     if (notes.length > 1500) return jsonError("Please shorten your appointment notes.");

@@ -86,8 +86,8 @@ export default function AdminPage() {
   }
 
   async function act(id: string, action: string) {
-    const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled.", cancel_test: "Test appointment cancelled, marked as test, and customer email suppressed." };
-    if ((action === "cancel" || action === "cancel_test") && !window.confirm(action === "cancel_test" ? "Cancel this fake/test appointment, mark it as a test record, release the time, and suppress cancellation email? Use ONLY for appointments you know are fake." : "Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
+    const labels: Record<string, string> = { verify_deposit: "Deposit verified and appointment confirmed.", reject_deposit: "Deposit marked as not verified.", cancel: "Appointment cancelled.", mark_test: "Cancelled appointment marked as a test record." };
+    if ((action === "cancel" || action === "mark_test") && !window.confirm(action === "mark_test" ? "Mark this cancelled appointment as a TEST RECORD? Only do this if you are certain it is not a real client record. This enables permanent deletion." : "Cancel this appointment and release the time? A verified $25 deposit remains non-refundable.")) return;
     if (action === "delete" && !window.confirm("Permanently delete this record? Use only for fake/test appointments. This cannot be undone.")) return;
     setBusy(id); setError(""); setNotice("");
     try {
@@ -179,7 +179,8 @@ export default function AdminPage() {
         ) : (
           <>
             <section aria-label="Appointment overview" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Total appointments</p><p className="mt-2 text-3xl font-semibold">{appointments.length}</p></div>
+              <p className="col-span-full text-xs text-[#aaa49a]">Dashboard counts reflect the appointment records currently loaded. Use “Load older appointments” below to include more history in these totals.</p>
+              <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Appointments loaded</p><p className="mt-2 text-3xl font-semibold">{appointments.length}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Today's appointments</p><p className="mt-2 text-3xl font-semibold">{todayCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Upcoming appointments</p><p className="mt-2 text-3xl font-semibold">{upcomingCount}</p></div>
               <div className="rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-5"><p className="text-sm text-[#aaa49a]">Deposits awaiting verification</p><p className="mt-2 text-3xl font-semibold text-[#f5dc9d]">{pendingCount}</p></div>
@@ -196,7 +197,7 @@ export default function AdminPage() {
             </section>
 
             <section aria-label="Client directory" className="mb-6 rounded-2xl border border-[#d7b56d]/25 bg-[#17130f] p-4 sm:p-6">
-              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the latest 200 appointment records currently loaded.</p></div>
+              <div className="mb-4"><h2 className="text-xl font-semibold">Client directory</h2><p className="mt-1 text-sm text-[#aaa49a]">Private contact and visit overview, grouped by phone number. Based on the appointment records currently loaded; load older records to expand this view.</p></div>
               <div className="space-y-3">
                 {clientDirectory.length ? clientDirectory.map((client) => <article key={client.phone.replace(/\D/g, "")} className="rounded-xl border border-white/10 bg-[#0e0c0a] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{client.name}</h3><p className="text-xs text-[#aaa49a]">{client.visits} active appointment{client.visits === 1 ? "" : "s"} in records</p></div><span className="text-xs text-[#d7b56d]">Last booking: {dateTime(client.latest)}</span></div>
@@ -230,7 +231,7 @@ export default function AdminPage() {
                         className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
                       >{a.status === "confirmed" && a.deposit_status === "verified" ? "Prepare WhatsApp appointment reminder" : "Message this customer on WhatsApp"}</a>}
                       {a.deposit_status === "pending" && <><button type="button" disabled={busy === a.id} aria-busy={busy === a.id} onClick={() => void act(a.id, "verify_deposit")} className="relative z-10 min-h-12 touch-manipulation pointer-events-auto select-none rounded-lg bg-[#d7b56d] px-4 py-3 text-sm font-bold text-[#17110a] disabled:cursor-wait disabled:opacity-50">Verify $25 deposit & confirm</button><button type="button" disabled={busy === a.id} aria-busy={busy === a.id} onClick={() => void act(a.id, "reject_deposit")} className="relative z-10 min-h-12 touch-manipulation pointer-events-auto select-none rounded-lg border border-amber-500/40 px-4 py-3 text-sm text-amber-200 disabled:cursor-wait disabled:opacity-50">Mark deposit not received</button></>}
-                      {a.status !== "cancelled" && <><button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button><button disabled={busy === a.id} onClick={() => void act(a.id, "cancel_test")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Cancel + mark as test (no email)</button></>}
+                      {a.status !== "cancelled" && <button disabled={busy === a.id} onClick={() => void act(a.id, "cancel")} className="rounded-lg border border-red-500/40 px-3 py-2 text-sm text-red-200 disabled:opacity-50">Cancel & release time</button>}
                       {a.status === "cancelled" && !String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "mark_test")} className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-200 disabled:opacity-50">Mark as test record</button>}
                       {a.status === "cancelled" && String(a.customer_notes || "").startsWith("[TEST RECORD]") && <button disabled={busy === a.id} onClick={() => void act(a.id, "delete")} className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 disabled:opacity-50">Delete test record</button>}
                     </div>

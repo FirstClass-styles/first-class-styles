@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { bookingDateTime, sendEmail } from "@/lib/email";
 import { adminConfigured, clearAdminSession, sameOrigin, setAdminSession, validAdminSession } from "@/lib/admin-auth";
 import { timingSafeEqual } from "node:crypto";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
 
   if (body.action !== "login" || typeof body.password !== "string" || body.password.length > 200) {
     return replyError("Enter your admin password.");
+  }
+
+  const limit = await consumeRateLimit(request, "admin-login", 10, 15 * 60);
+  if (!limit) return replyError("Login is temporarily unavailable. Please try again later.", 503);
+  if (!limit.allowed) {
+    const response = replyError("Too many login attempts. Please wait before trying again.", 429);
+    response.headers.set("Retry-After", String(limit.retryAfterSeconds));
+    return response;
   }
 
   if (!equalSecret(body.password, process.env.ADMIN_PASSWORD || "")) {
@@ -107,7 +116,6 @@ export async function PATCH(request: NextRequest) {
   if (body.action === "verify_deposit") update = { deposit_status: "verified", status: "confirmed" };
   else if (body.action === "reject_deposit") update = { deposit_status: "rejected", status: "cancelled" };
   else if (body.action === "cancel") update = { status: "cancelled" };
-  else if (body.action === "cancel_test") update = { status: "cancelled", customer_notes: "[TEST RECORD]" };
   else if (body.action === "mark_test") update = { customer_notes: "[TEST RECORD]" };
   else return replyError("Choose a valid appointment action.");
 
@@ -133,15 +141,19 @@ export async function PATCH(request: NextRequest) {
       return replyError("Only a booking awaiting its first deposit verification can be rejected here.", 409);
     }
     if (body.action === "mark_test" && previous.status !== "cancelled") return replyError("Cancel the appointment before marking it as a test record.", 409);
-    if (body.action === "cancel_test" && previous.status === "cancelled") return replyError("This appointment is already cancelled.", 409);
-    if (body.action === "cancel_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
     if (body.action === "mark_test") update.customer_notes = "[TEST RECORD] " + (previous.customer_notes || "");
 
+    // Recheck the state in the PATCH query itself to prevent stale admin actions
+    // from overwriting a newer status change between lookup and update.
     const query = new URLSearchParams({
       id: "eq." + body.id,
       ...(body.action === "verify_deposit" || body.action === "reject_deposit"
         ? { status: "eq.pending_payment", deposit_status: "eq.pending" }
-        : {}),
+        : body.action === "cancel"
+          ? { status: "in.(pending_payment,confirmed)" }
+          : body.action === "mark_test"
+            ? { status: "eq.cancelled" }
+            : {}),
       select: "id,status,deposit_status",
     });
     const response = await database("appointments?" + query.toString(), {
@@ -153,11 +165,13 @@ export async function PATCH(request: NextRequest) {
       return replyError("The appointment could not be updated.", 503);
     }
     const rows = await response.json();
-    if (!Array.isArray(rows) || rows.length === 0) return replyError("Appointment not found.", 404);
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return replyError("This appointment changed before the update could be applied. Refresh the dashboard and try again.", 409);
+    }
 
     const changed = previous.status !== rows[0].status || previous.deposit_status !== rows[0].deposit_status;
     let emailNotification: "sent" | "failed" | "not_applicable" = "not_applicable";
-    if (changed && previous.customer_email && body.action !== "cancel_test") {
+    if (changed && previous.customer_email) {
       const appointmentTime = bookingDateTime(previous.starts_at);
       let subject = "";
       let message = "";
@@ -229,7 +243,7 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id") || "";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return replyError("Invalid appointment reference.");
   try {
-    const check = await database("appointments?id=eq." + encodeURIComponent(id) + "&select=id,status,customer_notes"); if (!check.ok) return replyError("The record could not be checked before deletion.", 503); const checked = await check.json(); if (!Array.isArray(checked) || checked.length === 0) return replyError("Appointment not found.", 404); if (checked[0].status !== "cancelled" || !String(checked[0].customer_notes || "").startsWith("[TEST RECORD]")) return replyError("Only cancelled records explicitly marked as test records can be permanently deleted.", 409); const query = new URLSearchParams({ id: "eq." + id, status: "eq.cancelled", select: "id" });
+    const check = await database("appointments?id=eq." + encodeURIComponent(id) + "&select=id,status,customer_notes"); if (!check.ok) return replyError("The record could not be checked before deletion.", 503); const checked = await check.json(); if (!Array.isArray(checked) || checked.length === 0) return replyError("Appointment not found.", 404); if (checked[0].status !== "cancelled" || !String(checked[0].customer_notes || "").startsWith("[TEST RECORD]")) return replyError("Only cancelled records explicitly marked as test records can be permanently deleted.", 409); const query = new URLSearchParams({ id: "eq." + id, status: "eq.cancelled", customer_notes: "like.[TEST RECORD]*", select: "id" });
     const response = await database("appointments?" + query.toString(), { method: "DELETE" });
     if (!response.ok) {
       console.error("Admin appointment delete failed with status:", response.status);
