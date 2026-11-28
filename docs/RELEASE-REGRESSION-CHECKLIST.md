@@ -99,3 +99,14 @@ Expected: both identifiers are non-null. Separately confirm the intended migrati
 - [ ] End-to-end regression tests pass or gaps are documented.
 - [ ] Review PR changes and deployment preview on mobile and desktop.
 - [ ] Owner explicitly approves merge and production deployment.
+
+## Reminder delivery reliability (known limitation; do not claim exactly-once delivery)
+- [ ] Test owner reminder delivery independently from customer reminder delivery in isolated staging.
+- [ ] Test successful SMTP delivery followed by a simulated database status-write failure.
+- [ ] Test SMTP connection loss before DATA acceptance; delivery should be treated as failed only when rejection is definitive.
+- [ ] Test timeout/disconnect after message DATA submission; treat outcome as ambiguous, not as confirmed failure.
+- [ ] Ambiguous outcomes must not be automatically resent until reconciled; track an explicit uncertain state or equivalent operational review.
+- [ ] Confirm a successful recipient timestamp is persisted before any subsequent scheduled retry can resend that recipient.
+- [ ] Validate partial outcomes: owner delivered/customer failed, customer delivered/owner failed, both delivered, and both failed.
+
+**Known limitation:** Gmail SMTP does not provide an application-level idempotency key for this custom send flow. The app cannot guarantee exactly-once email delivery. A timeout or status-write failure after SMTP acceptance can leave delivery uncertain. A safer implementation should record per-recipient delivery state (including an `uncertain` state) and avoid blind retry for uncertain sends, while offering an owner-visible reconciliation path. This is a design requirement, not a completed code change.
